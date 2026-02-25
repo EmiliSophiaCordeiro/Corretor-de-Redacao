@@ -1,22 +1,43 @@
 import { useState } from "react";
 import EssayEditor from "@/components/EssayEditor";
 import GradingResults from "@/components/GradingResults";
-import { mockResult } from "@/data/mockResult";
 import { GradingResult } from "@/lib/types";
 import { FileText, Shield } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Index = () => {
   const [result, setResult] = useState<GradingResult | null>(null);
   const [isGrading, setIsGrading] = useState(false);
 
-  const handleSubmit = (text: string) => {
+  const handleSubmit = async (text: string) => {
     if (!text.trim()) return;
     setIsGrading(true);
-    // Simulate grading delay
-    setTimeout(() => {
-      setResult(mockResult);
+    setResult(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("corrigir-redacao", {
+        body: { essay: text },
+      });
+
+      if (error) {
+        console.error("Edge function error:", error);
+        toast.error("Erro ao corrigir a redação. Tente novamente.");
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      setResult(data as GradingResult);
+    } catch (e) {
+      console.error("Unexpected error:", e);
+      toast.error("Erro inesperado. Tente novamente.");
+    } finally {
       setIsGrading(false);
-    }, 1500);
+    }
   };
 
   return (
