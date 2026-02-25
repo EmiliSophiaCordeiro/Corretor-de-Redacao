@@ -60,11 +60,18 @@ serve(async (req) => {
   }
 
   try {
-    const { essay } = await req.json();
+    const { essay, theme } = await req.json();
 
     if (!essay || typeof essay !== "string" || essay.trim().length < 50) {
       return new Response(
         JSON.stringify({ error: "Redação muito curta ou inválida." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!theme || typeof theme !== "string" || theme.trim().length < 5) {
+      return new Response(
+        JSON.stringify({ error: "Tema da redação não informado." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -84,7 +91,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `Corrija a seguinte redação do ENEM com rigor máximo:\n\n${essay}` },
+          { role: "user", content: `TEMA DA REDAÇÃO: "${theme}"\n\nCorrija a seguinte redação do ENEM com rigor máximo. Verifique se o texto aborda o tema proposto — se houver fuga total do tema, a nota deve ser ZERO em todas as competências. Se houver tangenciamento (abordagem parcial), penalize severamente na C2.\n\n${essay}` },
         ],
       }),
     });
