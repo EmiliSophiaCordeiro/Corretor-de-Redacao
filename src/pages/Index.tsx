@@ -10,14 +10,14 @@ const Index = () => {
   const [result, setResult] = useState<GradingResult | null>(null);
   const [isGrading, setIsGrading] = useState(false);
 
-  const handleSubmit = async (text: string) => {
+  const handleSubmit = async (text: string, theme: string) => {
     if (!text.trim()) return;
     setIsGrading(true);
     setResult(null);
 
     try {
       const { data, error } = await supabase.functions.invoke("corrigir-redacao", {
-        body: { essay: text },
+        body: { essay: text, theme },
       });
 
       if (error) {

@@ -1,13 +1,14 @@
 import { useState, useRef } from "react";
 
 interface EssayEditorProps {
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string, theme: string) => void;
 }
 
 const MAX_LINES = 30;
 
 const EssayEditor = ({ onSubmit }: EssayEditorProps) => {
   const [text, setText] = useState("");
+  const [theme, setTheme] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const lineCount = text.split("\n").length;
@@ -23,6 +24,20 @@ const EssayEditor = ({ onSubmit }: EssayEditorProps) => {
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
+      {/* Theme input */}
+      <div className="border-b border-border px-4 py-3">
+        <label className="font-mono-score text-[10px] uppercase tracking-[0.2em] text-muted-foreground block mb-2">
+          Tema da Redação
+        </label>
+        <input
+          type="text"
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          placeholder="Ex: A persistência da violência contra a mulher na sociedade brasileira"
+          className="w-full bg-transparent border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+        />
+      </div>
+
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-destructive animate-pulse-red" />
@@ -66,8 +81,8 @@ const EssayEditor = ({ onSubmit }: EssayEditorProps) => {
           Mínimo 7 linhas • Máximo 30 linhas • Texto dissertativo-argumentativo
         </p>
         <button
-          onClick={() => onSubmit(text)}
-          disabled={lineCount < 7}
+          onClick={() => onSubmit(text, theme)}
+          disabled={lineCount < 7 || !theme.trim()}
           className="rounded-md bg-primary px-6 py-2 font-mono-score text-xs font-semibold uppercase tracking-widest text-primary-foreground transition-all hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed glow-blue"
         >
           Avaliar Redação
