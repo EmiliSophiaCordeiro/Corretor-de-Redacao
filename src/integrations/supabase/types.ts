@@ -14,7 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      correction_history: {
+        Row: {
+          created_at: string
+          essay_text: string
+          id: string
+          image_url: string | null
+          mode_name: string
+          result_json: Json
+          theme: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          essay_text: string
+          id?: string
+          image_url?: string | null
+          mode_name?: string
+          result_json: Json
+          theme: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          essay_text?: string
+          id?: string
+          image_url?: string | null
+          mode_name?: string
+          result_json?: Json
+          theme?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      correction_modes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_builtin: boolean | null
+          name: string
+          system_prompt: string
+          tone: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_builtin?: boolean | null
+          name: string
+          system_prompt: string
+          tone?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_builtin?: boolean | null
+          name?: string
+          system_prompt?: string
+          tone?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_calibration: {
+        Row: {
+          additional_instructions: string | null
+          common_feedback_patterns: string | null
+          custom_criteria: string | null
+          id: string
+          preferred_tone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_instructions?: string | null
+          common_feedback_patterns?: string | null
+          custom_criteria?: string | null
+          id?: string
+          preferred_tone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_instructions?: string | null
+          common_feedback_patterns?: string | null
+          custom_criteria?: string | null
+          id?: string
+          preferred_tone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

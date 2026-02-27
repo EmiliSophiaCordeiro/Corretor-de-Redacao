@@ -2,3 +2,6 @@ project_id = "sjncbzpxlmopvhhcjcme"
 
 [functions.corrigir-redacao]
 verify_jwt = false
+
+[functions.ocr-redacao]
+verify_jwt = false
