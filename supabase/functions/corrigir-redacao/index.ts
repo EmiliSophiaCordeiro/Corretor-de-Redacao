@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `Você é um corretor extremamente rigoroso do ENEM (Exame Nacional do Ensino Médio). Você segue o manual oficial do INEP ao pé da letra. Você NÃO é um tutor — você é um auditor oficial. Não seja encorajador. Seja preciso, frio e estritamente analítico.
+const BASE_ENEM_PROMPT = `Você é um corretor extremamente rigoroso do ENEM (Exame Nacional do Ensino Médio). Você segue o manual oficial do INEP ao pé da letra. Você NÃO é um tutor — você é um auditor oficial. Não seja encorajador. Seja preciso, frio e estritamente analítico.
 
 ## Regras de Correção ("Modo Carrasco")
 
@@ -18,8 +18,9 @@ const SYSTEM_PROMPT = `Você é um corretor extremamente rigoroso do ENEM (Exame
 
 **Competência 4 (Mecanismos de Coesão):** Conectivos inter e intraparágrafos são obrigatórios. Qualquer repetição de palavras ou falta de conectivos no início dos parágrafos resulta em redução de nota.
 
-**Competência 5 (Proposta de Intervenção):** Estritamente binário. Nota 0 para qualquer elemento ausente dos 5 obrigatórios: 1. Agente, 2. Ação, 3. Meio/Modo, 4. Efeito, 5. Detalhamento. O "Detalhamento" deve ser uma adição substancial, não apenas um adjetivo.
+**Competência 5 (Proposta de Intervenção):** Estritamente binário. Nota 0 para qualquer elemento ausente dos 5 obrigatórios: 1. Agente, 2. Ação, 3. Meio/Modo, 4. Efeito, 5. Detalhamento. O "Detalhamento" deve ser uma adição substancial, não apenas um adjetivo.`;
 
+const OUTPUT_FORMAT = `
 ## Formato de Saída
 
 Você DEVE responder APENAS com um objeto JSON válido, sem markdown, sem texto antes ou depois. Use exatamente esta estrutura:
@@ -60,7 +61,7 @@ serve(async (req) => {
   }
 
   try {
-    const { essay, theme } = await req.json();
+    const { essay, theme, mode_prompt, mode_name, calibration } = await req.json();
 
     if (!essay || typeof essay !== "string" || essay.trim().length < 50) {
       return new Response(
@@ -81,6 +82,40 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Build the system prompt based on mode and calibration
+    let systemPrompt: string;
+    
+    if (mode_name === "ENEM Padrão" || !mode_prompt) {
+      systemPrompt = BASE_ENEM_PROMPT;
+    } else {
+      systemPrompt = mode_prompt;
+    }
+
+    // Add calibration overrides if present
+    if (calibration) {
+      systemPrompt += "\n\n## Instruções de Calibração do Corretor\n";
+      if (calibration.preferred_tone) {
+        const toneMap: Record<string, string> = {
+          strict: "Seja extremamente rigoroso e frio na análise.",
+          balanced: "Seja equilibrado: aponte erros mas reconheça acertos.",
+          encouraging: "Seja encorajador, mas honesto. Destaque pontos positivos antes dos negativos.",
+          formal: "Use linguagem acadêmica formal na análise.",
+        };
+        systemPrompt += `\nTom: ${toneMap[calibration.preferred_tone] || calibration.preferred_tone}`;
+      }
+      if (calibration.custom_criteria) {
+        systemPrompt += `\nCritérios específicos do corretor: ${calibration.custom_criteria}`;
+      }
+      if (calibration.common_feedback_patterns) {
+        systemPrompt += `\nPadrões de feedback a seguir: ${calibration.common_feedback_patterns}`;
+      }
+      if (calibration.additional_instructions) {
+        systemPrompt += `\nInstruções adicionais: ${calibration.additional_instructions}`;
+      }
+    }
+
+    systemPrompt += OUTPUT_FORMAT;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -90,8 +125,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-pro",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `TEMA DA REDAÇÃO: "${theme}"\n\nCorrija a seguinte redação do ENEM com rigor máximo. Verifique se o texto aborda o tema proposto — se houver fuga total do tema, a nota deve ser ZERO em todas as competências. Se houver tangenciamento (abordagem parcial), penalize severamente na C2.\n\n${essay}` },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `TEMA DA REDAÇÃO: "${theme}"\nMODO DE CORREÇÃO: ${mode_name || "ENEM Padrão"}\n\nCorrija a seguinte redação com rigor máximo. Verifique se o texto aborda o tema proposto — se houver fuga total do tema, a nota deve ser ZERO em todas as competências. Se houver tangenciamento (abordagem parcial), penalize severamente na C2.\n\n${essay}` },
         ],
       }),
     });
@@ -124,7 +159,6 @@ serve(async (req) => {
       throw new Error("No content in AI response");
     }
 
-    // Parse the JSON from the AI response (may have markdown fences)
     let jsonStr = content.trim();
     if (jsonStr.startsWith("```")) {
       jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
