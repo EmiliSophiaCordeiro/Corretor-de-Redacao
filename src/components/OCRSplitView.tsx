@@ -66,10 +66,9 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
         }
 
         if (data?.text) {
-          const lines = data.text.split("\n").slice(0, 30);
-          const cleaned = lines.join("\n");
-          setExtractedText(cleaned);
-          onTextExtracted(cleaned);
+          setExtractedText(data.text);
+          onTextExtracted(data.text);
+          toast.success("Redação digitalizada com sucesso!");
           toast.success("Redação digitalizada com sucesso!");
         }
       } catch (e) {
