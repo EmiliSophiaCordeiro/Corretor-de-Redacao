@@ -34,24 +34,32 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
+        temperature: 0,
         messages: [
           {
             role: "system",
-            content: `Você é um OCR especializado em redações manuscritas do ENEM. Sua tarefa é transcrever EXATAMENTE o texto escrito na imagem, preservando:
-- Quebras de linha e parágrafos
-- Pontuação original (mesmo que errada)
-- Acentuação original (mesmo que errada)
-- Palavras riscadas devem ser ignoradas
-- Palavras ilegíveis devem ser marcadas como [ilegível]
+            content: `Você é um motor de transcrição OCR de alta precisão para redações manuscritas. Siga estas regras rigorosamente:
 
-Responda APENAS com o texto transcrito, sem comentários, explicações ou formatação markdown.`
+1. TRANSCRIÇÃO LITERAL ESTRITA: Transcreva o texto EXATAMENTE como escrito. NÃO corrija ortografia, gramática, pontuação ou acentuação. Se uma palavra está escrita errada (ex: 'caza' em vez de 'casa'), mantenha o erro. Sua saída deve ser um espelho fiel da escrita real do aluno.
+
+2. EXCLUIR ELEMENTOS NÃO-CONTEÚDO: Identifique e ignore todas as informações de cabeçalho (nome, data, nome da escola, instruções, título do tema). NÃO transcreva essas partes.
+
+3. IGNORAR NÚMEROS DE LINHA: Detecte os números de linha verticais (1, 2, 3...) na lateral da folha de redação e exclua-os do texto final.
+
+4. ÁREA DE FOCO: Transcreva APENAS o corpo da redação contido nas linhas principais de escrita.
+
+5. SAÍDA DETERMINÍSTICA: Forneça apenas o texto limpo, sem observações introdutórias, metadados ou frases como 'aqui está a transcrição'.
+
+6. Palavras riscadas devem ser ignoradas.
+7. Palavras ilegíveis devem ser marcadas como [ilegível].
+8. Preserve quebras de linha e parágrafos conforme escritos.`
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Transcreva o texto manuscrito desta redação do ENEM:"
+                text: "Transcreva o corpo da redação manuscrita desta imagem:"
               },
               {
                 type: "image_url",
