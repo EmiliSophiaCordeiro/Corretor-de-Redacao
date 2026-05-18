@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { Shield, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import CarracoLogo from "@/components/CarracoLogo";
+import Mascot from "@/components/Mascot";
 import { toast } from "sonner";
 
 const Auth = () => {
@@ -53,21 +55,18 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen gradient-hero flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-destructive/10 border border-destructive/20 mb-4">
-            <Shield className="h-6 w-6 text-destructive" />
-          </div>
-          <h1 className="text-xl font-semibold text-foreground">Corretor ENEM</h1>
-          <p className="font-mono-score text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-1">
-            {isLogin ? "Acesse sua conta" : "Crie sua conta"}
+        <div className="flex flex-col items-center mb-6">
+          <div className="animate-float mb-3"><Mascot size={100} mood="wink" /></div>
+          <CarracoLogo size={42} />
+          <p className="font-mono-score text-[10px] uppercase tracking-[0.25em] text-muted-foreground mt-3">
+            {isLogin ? "Entrar na sua conta" : "Crie sua conta gratuita"}
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="rounded-lg border border-border bg-card p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="rounded-3xl glass p-6 space-y-4 shadow-card">
           {!isLogin && (
             <div>
               <label className="font-mono-score text-[10px] uppercase tracking-[0.2em] text-muted-foreground block mb-1.5">
@@ -124,7 +123,7 @@ const Auth = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-md bg-primary px-6 py-2.5 font-mono-score text-xs font-semibold uppercase tracking-widest text-primary-foreground transition-all hover:brightness-110 disabled:opacity-50 glow-blue"
+            className="w-full rounded-full gradient-primary px-6 py-2.5 font-mono-score text-xs font-semibold uppercase tracking-widest text-primary-foreground transition-all hover:scale-[1.02] disabled:opacity-50 glow"
           >
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin mx-auto" />
