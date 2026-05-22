@@ -65,7 +65,7 @@ export function AppSidebar() {
 
   const renderGroup = (label: string, items: typeof main) => (
     <SidebarGroup>
-      {!collapsed && <SidebarGroupLabel className="font-mono-score text-[10px] uppercase tracking-widest text-sidebar-foreground/70">{label}</SidebarGroupLabel>}
+      {!collapsed && <SidebarGroupLabel className="font-mono-score text-[10px] uppercase tracking-widest text-[#D1D5DB]">{label}</SidebarGroupLabel>}
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
@@ -76,8 +76,8 @@ export function AppSidebar() {
                   className={({ isActive }) =>
                     `flex items-center gap-3 rounded-lg transition-all ${
                       isActive
-                        ? "gradient-primary text-primary-foreground font-medium glow"
-                        : "text-sidebar-foreground/95 hover:bg-sidebar-accent hover:text-white"
+                        ? "gradient-primary text-white font-semibold glow"
+                        : "text-white/90 hover:bg-primary/20 hover:text-white"
                     }`
                   }
                 >
