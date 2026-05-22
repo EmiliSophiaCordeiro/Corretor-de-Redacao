@@ -108,14 +108,14 @@ export function AppSidebar() {
       <SidebarFooter className="p-3 gap-2">
         <button
           onClick={toggle}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-sidebar-accent transition-colors"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
         >
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           {!collapsed && <span>{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>}
         </button>
         <button
           onClick={signOut}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-destructive/10 hover:text-destructive transition-colors"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
         >
           <LogOut className="h-4 w-4" />
           {!collapsed && <span>Sair</span>}
