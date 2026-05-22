@@ -65,7 +65,7 @@ export function AppSidebar() {
 
   const renderGroup = (label: string, items: typeof main) => (
     <SidebarGroup>
-      {!collapsed && <SidebarGroupLabel className="font-mono-score text-[10px] uppercase tracking-widest text-[#D1D5DB]">{label}</SidebarGroupLabel>}
+      {!collapsed && <SidebarGroupLabel className="font-mono-score text-[10px] uppercase tracking-widest text-sidebar-foreground/60">{label}</SidebarGroupLabel>}
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
@@ -76,8 +76,8 @@ export function AppSidebar() {
                   className={({ isActive }) =>
                     `flex items-center gap-3 rounded-lg transition-all ${
                       isActive
-                        ? "gradient-primary text-white font-semibold glow"
-                        : "text-white/90 hover:bg-primary/20 hover:text-white"
+                        ? "gradient-primary text-sidebar-primary-foreground font-semibold glow"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     }`
                   }
                 >
@@ -108,14 +108,14 @@ export function AppSidebar() {
       <SidebarFooter className="p-3 gap-2">
         <button
           onClick={toggle}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-sidebar-accent transition-colors"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
         >
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           {!collapsed && <span>{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>}
         </button>
         <button
           onClick={signOut}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-destructive/10 hover:text-destructive transition-colors"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
         >
           <LogOut className="h-4 w-4" />
           {!collapsed && <span>Sair</span>}
