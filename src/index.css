@@ -112,11 +112,11 @@
     --shadow-card: 0 4px 24px -8px hsl(0 0% 0% / 0.4);
 
     --sidebar-background: 230 40% 8%;
-    --sidebar-foreground: 230 30% 96%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 234 89% 74%;
-    --sidebar-primary-foreground: 230 40% 6%;
-    --sidebar-accent: 230 30% 14%;
-    --sidebar-accent-foreground: 230 20% 95%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 234 60% 22%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 230 25% 18%;
     --sidebar-ring: 234 89% 74%;
   }
