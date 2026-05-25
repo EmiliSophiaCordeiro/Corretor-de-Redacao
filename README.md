@@ -1,5 +1,8 @@
 # Welcome to your Lovable project
 
+# slide
+**URL**: https://gamma.app/docs/Descubra-o-Carraco-139jpa0cwmr1r05?mode=present#card-3doy4sft5t931ia
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
