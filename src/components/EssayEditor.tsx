@@ -27,12 +27,17 @@ const EssayEditor = ({ onSubmit, initialText }: EssayEditorProps) => {
     const mirror = mirrorRef.current;
     const ta = textareaRef.current;
     if (!mirror || !ta) return;
-    mirror.style.width = `${ta.clientWidth}px`;
-    // Trailing newline workaround: a final \n needs an extra rendered line.
+    const cs = window.getComputedStyle(ta);
+    const innerWidth =
+      ta.clientWidth -
+      parseFloat(cs.paddingLeft || "0") -
+      parseFloat(cs.paddingRight || "0");
+    mirror.style.width = `${Math.max(0, innerWidth)}px`;
     mirror.textContent = text + (text.endsWith("\n") ? " " : "");
     const lines = Math.max(1, Math.round(mirror.scrollHeight / LINE_HEIGHT_PX));
     setVisualLines(text.length === 0 ? 0 : lines);
   }, [text]);
+
 
   // Observe textarea width changes (responsive)
   useEffect(() => {

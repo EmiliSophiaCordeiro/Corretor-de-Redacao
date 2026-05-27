@@ -24,19 +24,28 @@ export const useEquippedMascot = () => {
 
   const refetch = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data: inv } = await supabase
       .from("user_inventory")
-      .select("equipped, mascot_items(code, category)")
+      .select("item_id")
       .eq("user_id", user.id)
       .eq("equipped", true);
+    const itemIds = (inv || []).map((r: any) => r.item_id);
+    if (itemIds.length === 0) {
+      setEquipped({ hat: "none", glasses: "none" });
+      return;
+    }
+    const { data: itemsData } = await supabase
+      .from("mascot_items")
+      .select("code, category")
+      .in("id", itemIds);
     const next: EquippedMascot = { hat: "none", glasses: "none" };
-    (data || []).forEach((row: any) => {
-      const code = row.mascot_items?.code;
-      if (codeToHat[code]) next.hat = codeToHat[code];
-      if (codeToGlasses[code]) next.glasses = codeToGlasses[code];
+    (itemsData || []).forEach((it: any) => {
+      if (codeToHat[it.code]) next.hat = codeToHat[it.code];
+      if (codeToGlasses[it.code]) next.glasses = codeToGlasses[it.code];
     });
     setEquipped(next);
   }, [user?.id]);
+
 
   useEffect(() => {
     refetch();
