@@ -65,13 +65,14 @@
 
     /* Sidebar */
     --sidebar-background: 230 60% 98%;
-    --sidebar-foreground: 230 30% 10%;
-    --sidebar-primary: 234 89% 74%;
+    --sidebar-foreground: 230 45% 14%;
+    --sidebar-primary: 234 89% 64%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 234 60% 95%;
-    --sidebar-accent-foreground: 230 30% 10%;
+    --sidebar-accent: 234 70% 92%;
+    --sidebar-accent-foreground: 234 80% 22%;
     --sidebar-border: 230 30% 88%;
     --sidebar-ring: 234 89% 74%;
+
   }
 
   .dark {
