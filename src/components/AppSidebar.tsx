@@ -73,6 +73,7 @@ export function AppSidebar() {
               <SidebarMenuButton asChild isActive={isActive(item.url)}>
                 <NavLink
                   to={item.url}
+                  end
                   className={({ isActive }) =>
                     `flex items-center gap-3 rounded-lg transition-all ${
                       isActive ? "active-nav gradient-primary font-semibold glow" : ""
