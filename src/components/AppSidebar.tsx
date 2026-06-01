@@ -70,14 +70,12 @@ export function AppSidebar() {
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.url}>
-              <SidebarMenuButton asChild isActive={isActive(item.url)} className="!opacity-100">
+              <SidebarMenuButton asChild isActive={isActive(item.url)}>
                 <NavLink
                   to={item.url}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-lg transition-all opacity-100 ${
-                      isActive
-                        ? "gradient-primary !text-white font-semibold glow [&_svg]:text-white"
-                        : "!text-sidebar-foreground hover:!bg-sidebar-accent hover:!text-sidebar-accent-foreground [&_svg]:text-sidebar-foreground hover:[&_svg]:text-sidebar-accent-foreground"
+                    `flex items-center gap-3 rounded-lg transition-all ${
+                      isActive ? "active-nav gradient-primary font-semibold glow" : ""
                     }`
                   }
                 >
