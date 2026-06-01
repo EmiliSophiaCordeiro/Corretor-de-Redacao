@@ -65,11 +65,11 @@
 
     /* Sidebar */
     --sidebar-background: 230 60% 98%;
-    --sidebar-foreground: 230 45% 14%;
+    --sidebar-foreground: 230 40% 8%;
     --sidebar-primary: 234 89% 64%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 234 70% 92%;
-    --sidebar-accent-foreground: 234 80% 22%;
+    --sidebar-accent-foreground: 234 85% 15%;
     --sidebar-border: 230 30% 88%;
     --sidebar-ring: 234 89% 74%;
 
