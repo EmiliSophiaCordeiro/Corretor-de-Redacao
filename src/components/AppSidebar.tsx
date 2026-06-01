@@ -73,13 +73,10 @@ export function AppSidebar() {
               <SidebarMenuButton asChild isActive={isActive(item.url)}>
                 <NavLink
                   to={item.url}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-lg transition-all ${
-                      isActive
-                        ? "gradient-primary text-sidebar-primary-foreground font-semibold glow"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    }`
-                  }
+                  end
+                  className={`flex items-center gap-3 rounded-lg transition-all ${
+                    isActive(item.url) ? "active-nav gradient-primary font-semibold glow" : ""
+                  }`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
                   {!collapsed && <span>{item.title}</span>}

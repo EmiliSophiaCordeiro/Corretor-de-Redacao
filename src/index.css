@@ -134,6 +134,24 @@
     font-family: 'Sora', system-ui, sans-serif;
     letter-spacing: -0.02em;
   }
+
+  /* Force readable sidebar nav link colors in both themes. */
+  [data-sidebar="menu"] a,
+  [data-sidebar="menu"] a span,
+  [data-sidebar="menu"] a svg {
+    color: hsl(var(--sidebar-foreground)) !important;
+    opacity: 1 !important;
+  }
+  [data-sidebar="menu"] a:hover,
+  [data-sidebar="menu"] a:hover span,
+  [data-sidebar="menu"] a:hover svg {
+    color: hsl(var(--sidebar-accent-foreground)) !important;
+  }
+  [data-sidebar="menu"] a.active-nav,
+  [data-sidebar="menu"] a.active-nav span,
+  [data-sidebar="menu"] a.active-nav svg {
+    color: #ffffff !important;
+  }
 }
 
 @layer utilities {
