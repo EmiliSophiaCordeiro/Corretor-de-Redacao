@@ -32,7 +32,41 @@ const rarityClass: Record<string, string> = {
   legendary: "ring-rarity-legendary",
 };
 
-const equippableCategories = new Set(["hat", "glasses"]);
+const equippableCategories = new Set([
+  "hat",
+  "glasses",
+  "hair",
+  "outfit",
+  "speech_bubble",
+  "accessory",
+  "theme",
+  "pack",
+  "vice",
+]);
+
+const categoryLabels: Record<string, string> = {
+  hat: "Chapéus",
+  glasses: "Óculos",
+  hair: "Cabelos",
+  outfit: "Roupas",
+  speech_bubble: "Balões de Fala",
+  accessory: "Acessórios",
+  theme: "Temas",
+  pack: "Pacotes Premium",
+  vice: "Vícios (+18)",
+};
+
+const categoryOrder = [
+  "pack",
+  "theme",
+  "outfit",
+  "hair",
+  "hat",
+  "glasses",
+  "accessory",
+  "speech_bubble",
+  "vice",
+];
 
 const Shop = () => {
   const { user } = useAuth();
