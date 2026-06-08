@@ -32,7 +32,41 @@ const rarityClass: Record<string, string> = {
   legendary: "ring-rarity-legendary",
 };
 
-const equippableCategories = new Set(["hat", "glasses"]);
+const equippableCategories = new Set([
+  "hat",
+  "glasses",
+  "hair",
+  "outfit",
+  "speech_bubble",
+  "accessory",
+  "theme",
+  "pack",
+  "vice",
+]);
+
+const categoryLabels: Record<string, string> = {
+  hat: "Chapéus",
+  glasses: "Óculos",
+  hair: "Cabelos",
+  outfit: "Roupas",
+  speech_bubble: "Balões de Fala",
+  accessory: "Acessórios",
+  theme: "Temas",
+  pack: "Pacotes Premium",
+  vice: "Vícios (+18)",
+};
+
+const categoryOrder = [
+  "pack",
+  "theme",
+  "outfit",
+  "hair",
+  "hat",
+  "glasses",
+  "accessory",
+  "speech_bubble",
+  "vice",
+];
 
 const Shop = () => {
   const { user } = useAuth();
@@ -126,68 +160,86 @@ const Shop = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {items
-          .filter((i) => !i.is_default)
-          .map((item) => {
-            const row = ownedMap.get(item.id);
-            const isOwned = !!row;
-            const isEquipped = !!row?.equipped;
-            return (
-              <div
-                key={item.id}
-                className={`rounded-2xl bg-card p-4 text-center transition-all hover:scale-[1.03] ${rarityClass[item.rarity]}`}
-              >
-                <div className="h-20 flex items-center justify-center text-4xl mb-2">
-                  {item.preview_emoji}
-                </div>
-                <h3 className="font-display font-semibold text-sm">{item.name}</h3>
-                <p
-                  className={`text-[10px] uppercase tracking-widest font-mono-score rarity-${item.rarity}`}
-                >
-                  {item.rarity}
-                </p>
-                {!isOwned && (
-                  <button
-                    onClick={() => buy(item)}
-                    className="mt-3 w-full rounded-full py-2 text-xs font-medium gradient-primary text-primary-foreground hover:scale-105 transition-all"
+      {categoryOrder.map((cat) => {
+        const catItems = items.filter((i) => !i.is_default && i.category === cat);
+        if (catItems.length === 0) return null;
+        return (
+          <section key={cat} className="mb-8">
+            <h2 className="font-display font-bold text-lg mb-3 flex items-center gap-2">
+              <span className="h-1 w-6 rounded-full gradient-primary" />
+              {categoryLabels[cat] || cat}
+              <span className="text-xs text-muted-foreground font-normal">
+                ({catItems.length})
+              </span>
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {catItems.map((item) => {
+                const row = ownedMap.get(item.id);
+                const isOwned = !!row;
+                const isEquipped = !!row?.equipped;
+                return (
+                  <div
+                    key={item.id}
+                    className={`rounded-2xl bg-card p-4 text-center transition-all hover:scale-[1.03] ${rarityClass[item.rarity]}`}
                   >
-                    <span className="flex items-center justify-center gap-1">
-                      <Coins className="h-3 w-3" /> {item.price}
-                    </span>
-                  </button>
-                )}
-                {isOwned && (
-                  <button
-                    onClick={() => toggleEquip(item)}
-                    disabled={!equippableCategories.has(item.category)}
-                    className={`mt-3 w-full rounded-full py-2 text-xs font-medium transition-all ${
-                      isEquipped
-                        ? "bg-accent text-accent-foreground glow-pink"
-                        : equippableCategories.has(item.category)
-                        ? "bg-primary/15 text-primary hover:bg-primary/25"
-                        : "bg-success/20 text-success cursor-not-allowed"
-                    }`}
-                  >
-                    {isEquipped ? (
-                      <span className="flex items-center justify-center gap-1">
-                        <Sparkles className="h-3 w-3" /> Equipado
-                      </span>
-                    ) : equippableCategories.has(item.category) ? (
-                      <span className="flex items-center justify-center gap-1">
-                        Equipar
-                      </span>
-                    ) : (
-                      <span className="flex items-center justify-center gap-1">
-                        <Check className="h-3 w-3" /> Possuído
-                      </span>
+                    <div className="h-20 flex items-center justify-center text-4xl mb-2">
+                      {item.preview_emoji}
+                    </div>
+                    <h3 className="font-display font-semibold text-sm">{item.name}</h3>
+                    {item.description && (
+                      <p className="text-[10px] text-muted-foreground line-clamp-2 mt-1">
+                        {item.description}
+                      </p>
                     )}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-      </div>
+                    <p
+                      className={`text-[10px] uppercase tracking-widest font-mono-score rarity-${item.rarity} mt-1`}
+                    >
+                      {item.rarity}
+                    </p>
+                    {!isOwned && (
+                      <button
+                        onClick={() => buy(item)}
+                        className="mt-3 w-full rounded-full py-2 text-xs font-medium gradient-primary text-primary-foreground hover:scale-105 transition-all"
+                      >
+                        <span className="flex items-center justify-center gap-1">
+                          <Coins className="h-3 w-3" /> {item.price}
+                        </span>
+                      </button>
+                    )}
+                    {isOwned && (
+                      <button
+                        onClick={() => toggleEquip(item)}
+                        disabled={!equippableCategories.has(item.category)}
+                        className={`mt-3 w-full rounded-full py-2 text-xs font-medium transition-all ${
+                          isEquipped
+                            ? "bg-accent text-accent-foreground glow-pink"
+                            : equippableCategories.has(item.category)
+                            ? "bg-primary/15 text-primary hover:bg-primary/25"
+                            : "bg-success/20 text-success cursor-not-allowed"
+                        }`}
+                      >
+                        {isEquipped ? (
+                          <span className="flex items-center justify-center gap-1">
+                            <Sparkles className="h-3 w-3" /> Equipado
+                          </span>
+                        ) : equippableCategories.has(item.category) ? (
+                          <span className="flex items-center justify-center gap-1">
+                            Equipar
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-center gap-1">
+                            <Check className="h-3 w-3" /> Possuído
+                          </span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 };
