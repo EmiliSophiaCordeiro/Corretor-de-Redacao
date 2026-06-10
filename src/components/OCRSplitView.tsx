@@ -17,6 +17,10 @@ const loadingMessages = [
 const OCRSplitView = ({ onTextExtracted }: Props) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string | null>(null);
+  const [confidence, setConfidence] = useState<number | null>(null);
+  const [lineCount, setLineCount] = useState<number | null>(null);
+  const [lowConfWords, setLowConfWords] = useState<string[]>([]);
+  const [ocrNotes, setOcrNotes] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
