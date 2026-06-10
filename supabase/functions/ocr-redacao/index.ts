@@ -206,9 +206,7 @@ serve(async (req) => {
       );
     }
 
-    const lines = Array.isArray(parsed.lines)
-      ? parsed.lines.filter((l) => typeof l === "string").map((l) => l.replace(/\s+$/g, ""))
-      : [];
+    const lines = Array.isArray(parsed.lines) ? parsed.lines.filter((l) => typeof l === "string") : [];
     const text = lines.join("\n");
     const reportedConfidence = typeof parsed.confidence === "number" ? Math.max(0, Math.min(100, parsed.confidence)) : 0;
     const expectedCount = typeof expectedLineCount === "number" && expectedLineCount > 0 ? expectedLineCount : null;
