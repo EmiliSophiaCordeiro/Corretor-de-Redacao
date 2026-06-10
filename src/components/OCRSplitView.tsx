@@ -17,6 +17,10 @@ const loadingMessages = [
 const OCRSplitView = ({ onTextExtracted }: Props) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string | null>(null);
+  const [confidence, setConfidence] = useState<number | null>(null);
+  const [lineCount, setLineCount] = useState<number | null>(null);
+  const [lowConfWords, setLowConfWords] = useState<string[]>([]);
+  const [ocrNotes, setOcrNotes] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -48,6 +52,10 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
 
     setIsScanning(true);
     setExtractedText(null);
+    setConfidence(null);
+    setLineCount(null);
+    setLowConfWords([]);
+    setOcrNotes("");
     startLoadingAnimation();
 
     const reader = new FileReader();
@@ -67,9 +75,17 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
 
         if (data?.text) {
           setExtractedText(data.text);
+          setConfidence(typeof data.confidence === "number" ? data.confidence : null);
+          setLineCount(typeof data.line_count === "number" ? data.line_count : null);
+          setLowConfWords(Array.isArray(data.low_confidence_words) ? data.low_confidence_words : []);
+          setOcrNotes(typeof data.notes === "string" ? data.notes : "");
           onTextExtracted(data.text);
-          toast.success("Redação digitalizada com sucesso!");
-          toast.success("Redação digitalizada com sucesso!");
+          const conf = typeof data.confidence === "number" ? ` · ${data.confidence}% confiança` : "";
+          const lc = typeof data.line_count === "number" ? ` · ${data.line_count} linhas` : "";
+          toast.success(`Redação digitalizada${conf}${lc}`);
+          if (typeof data.confidence === "number" && data.confidence < 70) {
+            toast.warning("Confiança baixa — revise a transcrição antes de enviar.");
+          }
         }
       } catch (e) {
         console.error("OCR error:", e);
@@ -205,10 +221,46 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
               </p>
             </div>
           ) : extractedText ? (
-            <div className="rounded-md border border-border bg-muted/10 p-3 max-h-[400px] overflow-y-auto">
-              <pre className="text-sm text-foreground whitespace-pre-wrap font-mono-score leading-relaxed">
-                {extractedText}
-              </pre>
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono-score uppercase tracking-wider">
+                {confidence !== null && (
+                  <span
+                    className={`rounded px-2 py-0.5 border ${
+                      confidence >= 80
+                        ? "border-green-500/40 text-green-600 dark:text-green-400 bg-green-500/10"
+                        : confidence >= 60
+                        ? "border-yellow-500/40 text-yellow-600 dark:text-yellow-400 bg-yellow-500/10"
+                        : "border-red-500/40 text-red-600 dark:text-red-400 bg-red-500/10"
+                    }`}
+                  >
+                    {confidence}% confiança
+                  </span>
+                )}
+                {lineCount !== null && (
+                  <span className="rounded px-2 py-0.5 border border-border text-muted-foreground">
+                    {lineCount} linhas
+                  </span>
+                )}
+              </div>
+              <div className="rounded-md border border-border bg-muted/10 p-3 max-h-[360px] overflow-y-auto">
+                <pre className="text-sm text-foreground whitespace-pre-wrap font-mono-score leading-relaxed">
+                  {extractedText}
+                </pre>
+              </div>
+              {lowConfWords.length > 0 && (
+                <div className="rounded-md border border-yellow-500/30 bg-yellow-500/5 p-2">
+                  <p className="text-[10px] font-mono-score uppercase tracking-wider text-yellow-700 dark:text-yellow-400 mb-1">
+                    Palavras incertas — revise
+                  </p>
+                  <p className="text-xs text-foreground/80">{lowConfWords.join(" · ")}</p>
+                </div>
+              )}
+              {ocrNotes && (
+                <p className="text-[11px] text-muted-foreground italic">{ocrNotes}</p>
+              )}
+              <p className="text-[10px] text-muted-foreground">
+                Revise a transcrição abaixo antes de enviar para correção. Edite no editor se necessário.
+              </p>
             </div>
           ) : (
             <div className="flex items-center justify-center py-16 text-muted-foreground/40">
