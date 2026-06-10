@@ -52,6 +52,10 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
 
     setIsScanning(true);
     setExtractedText(null);
+    setConfidence(null);
+    setLineCount(null);
+    setLowConfWords([]);
+    setOcrNotes("");
     startLoadingAnimation();
 
     const reader = new FileReader();
@@ -71,9 +75,17 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
 
         if (data?.text) {
           setExtractedText(data.text);
+          setConfidence(typeof data.confidence === "number" ? data.confidence : null);
+          setLineCount(typeof data.line_count === "number" ? data.line_count : null);
+          setLowConfWords(Array.isArray(data.low_confidence_words) ? data.low_confidence_words : []);
+          setOcrNotes(typeof data.notes === "string" ? data.notes : "");
           onTextExtracted(data.text);
-          toast.success("Redação digitalizada com sucesso!");
-          toast.success("Redação digitalizada com sucesso!");
+          const conf = typeof data.confidence === "number" ? ` · ${data.confidence}% confiança` : "";
+          const lc = typeof data.line_count === "number" ? ` · ${data.line_count} linhas` : "";
+          toast.success(`Redação digitalizada${conf}${lc}`);
+          if (typeof data.confidence === "number" && data.confidence < 70) {
+            toast.warning("Confiança baixa — revise a transcrição antes de enviar.");
+          }
         }
       } catch (e) {
         console.error("OCR error:", e);
