@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
 import Mascot from "@/components/Mascot";
-import { Sparkles, Zap, Coins } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const Studio = () => {
   const { user } = useAuth();
@@ -19,7 +19,7 @@ const Studio = () => {
   const [isGrading, setIsGrading] = useState(false);
   const [selectedMode, setSelectedMode] = useState<CorrectionMode | null>(null);
   const [essayTextFromOCR, setEssayTextFromOCR] = useState<string | null>(null);
-  const [rewardToast, setRewardToast] = useState<string | null>(null);
+  const [lastCorrectionPayload, setLastCorrectionPayload] = useState<{ text: string; theme: string; lines: number; timestamp: string } | null>(null);
 
   const handleSubmit = async (text: string, theme: string) => {
     if (!text.trim() || !user) return;
@@ -29,6 +29,14 @@ const Studio = () => {
     try {
       const { data: calibration } = await supabase
         .from("user_calibration").select("*").eq("user_id", user.id).maybeSingle();
+
+      console.log("[Correção] Enviando texto", {
+        themeLength: theme.length,
+        essayChars: text.length,
+        essayLines: text.split("\n").length,
+        mode: selectedMode?.name || "ENEM Padrão",
+      });
+      setLastCorrectionPayload({ text, theme, lines: text.split("\n").length, timestamp: new Date().toISOString() });
 
       const { data, error } = await supabase.functions.invoke("corrigir-redacao", {
         body: {
@@ -51,6 +59,7 @@ const Studio = () => {
       }
 
       setResult(data as GradingResult);
+      console.log("[Correção] Resultado", { total_score: (data as GradingResult)?.total_score });
 
       // Award XP based on score
       const totalScore = (data as GradingResult)?.total_score || 0;
@@ -77,6 +86,7 @@ const Studio = () => {
         description: `Nota ${totalScore} · sequência mantida!`,
       });
     } catch (e) {
+      console.error("[Correção] Exceção", e);
       toast.error("Erro inesperado. Tente novamente.");
     } finally {
       setIsGrading(false);
@@ -108,6 +118,25 @@ const Studio = () => {
       </section>
 
       <section><EssayEditor onSubmit={handleSubmit} initialText={essayTextFromOCR} /></section>
+
+      {lastCorrectionPayload && (
+        <details className="rounded-lg border border-border bg-card p-4">
+          <summary className="cursor-pointer font-mono-score text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            Depuração temporária — texto final enviado para correção
+          </summary>
+          <div className="mt-3 grid gap-3 text-xs">
+            <div className="flex flex-wrap gap-3 text-muted-foreground">
+              <span>{lastCorrectionPayload.lines} linhas</span>
+              <span>{lastCorrectionPayload.text.length} caracteres</span>
+              <span>{lastCorrectionPayload.timestamp}</span>
+            </div>
+            <p className="text-foreground"><strong>Tema:</strong> {lastCorrectionPayload.theme}</p>
+            <pre className="max-h-64 overflow-auto rounded-md border border-border bg-muted/10 p-3 font-mono-score text-foreground whitespace-pre-wrap">
+              {lastCorrectionPayload.text}
+            </pre>
+          </div>
+        </details>
+      )}
 
       {isGrading && (
         <div className="text-center py-12">
