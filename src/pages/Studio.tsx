@@ -19,7 +19,6 @@ const Studio = () => {
   const [isGrading, setIsGrading] = useState(false);
   const [selectedMode, setSelectedMode] = useState<CorrectionMode | null>(null);
   const [essayTextFromOCR, setEssayTextFromOCR] = useState<string | null>(null);
-  const [rewardToast, setRewardToast] = useState<string | null>(null);
 
   const handleSubmit = async (text: string, theme: string) => {
     if (!text.trim() || !user) return;
