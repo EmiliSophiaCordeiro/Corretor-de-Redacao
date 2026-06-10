@@ -19,6 +19,7 @@ const Studio = () => {
   const [isGrading, setIsGrading] = useState(false);
   const [selectedMode, setSelectedMode] = useState<CorrectionMode | null>(null);
   const [essayTextFromOCR, setEssayTextFromOCR] = useState<string | null>(null);
+  const [lastCorrectionPayload, setLastCorrectionPayload] = useState<{ text: string; theme: string; lines: number; timestamp: string } | null>(null);
 
   const handleSubmit = async (text: string, theme: string) => {
     if (!text.trim() || !user) return;
@@ -35,6 +36,7 @@ const Studio = () => {
         essayLines: text.split("\n").length,
         mode: selectedMode?.name || "ENEM Padrão",
       });
+      setLastCorrectionPayload({ text, theme, lines: text.split("\n").length, timestamp: new Date().toISOString() });
 
       const { data, error } = await supabase.functions.invoke("corrigir-redacao", {
         body: {
@@ -116,6 +118,25 @@ const Studio = () => {
       </section>
 
       <section><EssayEditor onSubmit={handleSubmit} initialText={essayTextFromOCR} /></section>
+
+      {lastCorrectionPayload && (
+        <details className="rounded-lg border border-border bg-card p-4">
+          <summary className="cursor-pointer font-mono-score text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            Depuração temporária — texto final enviado para correção
+          </summary>
+          <div className="mt-3 grid gap-3 text-xs">
+            <div className="flex flex-wrap gap-3 text-muted-foreground">
+              <span>{lastCorrectionPayload.lines} linhas</span>
+              <span>{lastCorrectionPayload.text.length} caracteres</span>
+              <span>{lastCorrectionPayload.timestamp}</span>
+            </div>
+            <p className="text-foreground"><strong>Tema:</strong> {lastCorrectionPayload.theme}</p>
+            <pre className="max-h-64 overflow-auto rounded-md border border-border bg-muted/10 p-3 font-mono-score text-foreground whitespace-pre-wrap">
+              {lastCorrectionPayload.text}
+            </pre>
+          </div>
+        </details>
+      )}
 
       {isGrading && (
         <div className="text-center py-12">
