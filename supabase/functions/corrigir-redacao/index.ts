@@ -88,6 +88,13 @@ serve(async (req) => {
   try {
     const { essay, theme, mode_prompt, mode_name, calibration } = await req.json();
 
+    console.log("corrigir-redacao payload", JSON.stringify({
+      essay_chars: typeof essay === "string" ? essay.length : 0,
+      essay_lines: typeof essay === "string" ? essay.split("\n").length : 0,
+      theme_chars: typeof theme === "string" ? theme.length : 0,
+      mode_name: mode_name || "ENEM Padrão",
+    }));
+
     if (!essay || typeof essay !== "string" || essay.trim().length < 50) {
       return new Response(
         JSON.stringify({ error: "Redação muito curta ou inválida." }),
@@ -183,6 +190,8 @@ serve(async (req) => {
     if (!content) {
       throw new Error("No content in AI response");
     }
+
+    console.log("corrigir-redacao ai response", JSON.stringify({ content_chars: content.length, preview: content.slice(0, 240) }));
 
     let jsonStr = content.trim();
     if (jsonStr.startsWith("```")) {
