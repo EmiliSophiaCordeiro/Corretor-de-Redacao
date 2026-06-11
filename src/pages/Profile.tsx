@@ -39,9 +39,12 @@ const Profile = () => {
     const path = `${user.id}/avatar.${ext}`;
     const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
     if (error) return toast.error(error.message);
-    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-    await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("user_id", user.id);
-    setAvatarUrl(data.publicUrl);
+    const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
+    const url = data?.signedUrl;
+    if (url) {
+      await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
+      setAvatarUrl(url);
+    }
     toast.success("Foto atualizada");
   };
 
