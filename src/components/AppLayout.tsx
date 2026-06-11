@@ -3,6 +3,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
+import { useAchievementNotifier } from "@/hooks/useAchievementNotifier";
+import OnboardingTour from "./OnboardingTour";
 import { Flame, Zap, Coins } from "lucide-react";
 
 const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | string; label: string; color: string }) => (
