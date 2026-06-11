@@ -139,7 +139,6 @@
     --border: 230 25% 70%;
     --muted-foreground: 230 15% 80%;
   }
-}
 
 @layer base {
   * { @apply border-border; }
