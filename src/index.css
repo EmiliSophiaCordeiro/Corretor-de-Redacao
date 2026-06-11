@@ -123,6 +123,24 @@
   }
 }
 
+  /* Accessibility preferences */
+  html.reduce-motion *,
+  html.reduce-motion *::before,
+  html.reduce-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  html.high-contrast {
+    --border: 230 30% 50%;
+    --muted-foreground: 230 12% 30%;
+  }
+  html.high-contrast.dark {
+    --border: 230 25% 70%;
+    --muted-foreground: 230 15% 80%;
+  }
+}
+
 @layer base {
   * { @apply border-border; }
   body {
