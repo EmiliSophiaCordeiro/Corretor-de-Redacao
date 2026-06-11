@@ -18,6 +18,7 @@ const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | 
 const AppLayout = () => {
   const { user, loading } = useAuth();
   const { stats } = useUserStats();
+  useAchievementNotifier();
 
   if (loading) {
     return (
