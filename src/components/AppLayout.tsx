@@ -3,6 +3,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
+import { useAchievementNotifier } from "@/hooks/useAchievementNotifier";
+import OnboardingTour from "./OnboardingTour";
 import { Flame, Zap, Coins } from "lucide-react";
 
 const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | string; label: string; color: string }) => (
@@ -16,6 +18,7 @@ const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | 
 const AppLayout = () => {
   const { user, loading } = useAuth();
   const { stats } = useUserStats();
+  useAchievementNotifier();
 
   if (loading) {
     return (
@@ -46,6 +49,7 @@ const AppLayout = () => {
           <main className="flex-1 overflow-auto">
             <Outlet />
           </main>
+          <OnboardingTour />
         </div>
       </div>
     </SidebarProvider>

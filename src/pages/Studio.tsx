@@ -72,6 +72,13 @@ const Studio = () => {
         _points: pointsEarned,
       });
 
+      // Track max score for achievements
+      const { data: curStats } = await supabase
+        .from("user_stats").select("max_score").eq("user_id", user.id).maybeSingle();
+      if ((curStats?.max_score ?? 0) < totalScore) {
+        await supabase.from("user_stats").update({ max_score: totalScore } as any).eq("user_id", user.id);
+      }
+
       await supabase.from("correction_history").insert({
         user_id: user.id,
         theme,
@@ -79,6 +86,9 @@ const Studio = () => {
         mode_name: selectedMode?.name || "ENEM Padrão",
         result_json: data,
       });
+
+      // Auto-unlock achievements based on new stats
+      await supabase.rpc("check_and_unlock_achievements" as any, { _user_id: user.id });
 
       await refetch();
       toast.success(`+${xpEarned} XP · +${pointsEarned} pontos`, {

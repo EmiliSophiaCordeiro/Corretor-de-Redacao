@@ -16,37 +16,186 @@ export type Database = {
     Tables: {
       achievements: {
         Row: {
+          category: string
           code: string
           created_at: string
           description: string
           icon: string | null
           id: string
+          metric_key: string | null
           name: string
           points_reward: number
           rarity: string
+          target_value: number | null
           xp_reward: number
         }
         Insert: {
+          category?: string
           code: string
           created_at?: string
           description: string
           icon?: string | null
           id?: string
+          metric_key?: string | null
           name: string
           points_reward?: number
           rarity?: string
+          target_value?: number | null
           xp_reward?: number
         }
         Update: {
+          category?: string
           code?: string
           created_at?: string
           description?: string
           icon?: string | null
           id?: string
+          metric_key?: string | null
           name?: string
           points_reward?: number
           rarity?: string
+          target_value?: number | null
           xp_reward?: number
+        }
+        Relationships: []
+      }
+      community_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "community_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          category: string
+          comments_count: number
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          likes_count: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          comments_count?: number
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes_count?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          comments_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes_count?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reporter_id: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          reporter_id: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+          target_id?: string
+          target_type?: string
         }
         Relationships: []
       }
@@ -197,23 +346,35 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           display_name: string | null
           id: string
+          is_public: boolean
+          onboarding_completed: boolean
+          preferences: Json
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_public?: boolean
+          onboarding_completed?: boolean
+          preferences?: Json
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_public?: boolean
+          onboarding_completed?: boolean
+          preferences?: Json
           user_id?: string
         }
         Relationships: []
@@ -355,6 +516,7 @@ export type Database = {
           last_activity_date: string | null
           level: number
           longest_streak: number
+          max_score: number
           points: number
           updated_at: string
           user_id: string
@@ -367,6 +529,7 @@ export type Database = {
           last_activity_date?: string | null
           level?: number
           longest_streak?: number
+          max_score?: number
           points?: number
           updated_at?: string
           user_id: string
@@ -379,6 +542,7 @@ export type Database = {
           last_activity_date?: string | null
           level?: number
           longest_streak?: number
+          max_score?: number
           points?: number
           updated_at?: string
           user_id?: string
@@ -400,6 +564,7 @@ export type Database = {
           last_activity_date: string | null
           level: number
           longest_streak: number
+          max_score: number
           points: number
           updated_at: string
           user_id: string
@@ -411,6 +576,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      check_and_unlock_achievements: {
+        Args: { _user_id: string }
+        Returns: string[]
       }
       xp_for_level: { Args: { _level: number }; Returns: number }
     }
