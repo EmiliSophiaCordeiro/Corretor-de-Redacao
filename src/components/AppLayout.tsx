@@ -49,6 +49,14 @@ const AppLayout = () => {
           <main className="flex-1 overflow-auto">
             <Outlet />
           </main>
+          <OnboardingTour />
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+const _end = null;
         </div>
       </div>
     </SidebarProvider>
