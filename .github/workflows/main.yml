@@ -1,0 +1,35 @@
+name: Main CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validar produção
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Testes
+        run: npm test --if-present
+
+      - name: Build de produção
+        run: npm run build
+
+# NOTA: Deploy automático NÃO configurado por design.
+# Produção (main) deve ser publicada apenas após aprovação manual.
