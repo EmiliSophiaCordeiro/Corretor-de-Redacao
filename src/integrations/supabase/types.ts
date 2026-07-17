@@ -552,7 +552,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard: {
+        Row: {
+          avatar_url: string | null
+          current_streak: number | null
+          display_name: string | null
+          essays_completed: number | null
+          level: number | null
+          user_id: string | null
+          xp: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       award_xp: {
@@ -580,18 +591,6 @@ export type Database = {
       check_and_unlock_achievements: {
         Args: { _user_id: string }
         Returns: string[]
-      }
-      get_leaderboard: {
-        Args: { _limit?: number }
-        Returns: {
-          avatar_url: string
-          current_streak: number
-          display_name: string
-          essays_completed: number
-          level: number
-          user_id: string
-          xp: number
-        }[]
       }
       xp_for_level: { Args: { _level: number }; Returns: number }
     }
