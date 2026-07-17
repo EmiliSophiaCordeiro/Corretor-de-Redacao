@@ -172,6 +172,7 @@ const EssayEditor = ({ onSubmit, initialText }: EssayEditorProps) => {
           ref={textareaRef}
           value={text}
           onChange={handleChange}
+          onPaste={handlePaste}
           onScroll={handleScroll}
           placeholder="Cole ou digite sua redação aqui..."
           className="w-full min-h-[calc(30*1.75rem+2rem)] resize-none bg-transparent pl-16 pr-4 pt-4 pb-4 font-mono-score text-sm leading-7 text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-0 border-none"
