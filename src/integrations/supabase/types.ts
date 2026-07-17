@@ -581,6 +581,18 @@ export type Database = {
         Args: { _user_id: string }
         Returns: string[]
       }
+      get_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          avatar_url: string
+          current_streak: number
+          display_name: string
+          essays_completed: number
+          level: number
+          user_id: string
+          xp: number
+        }[]
+      }
       xp_for_level: { Args: { _level: number }; Returns: number }
     }
     Enums: {
