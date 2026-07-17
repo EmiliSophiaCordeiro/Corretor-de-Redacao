@@ -17,42 +17,49 @@ type DebugEvent = {
 const OCR_MODEL = "google/gemini-2.5-pro";
 const LOW_CONFIDENCE_THRESHOLD = 70;
 
-const SYSTEM_PROMPT = `Você é um mecanismo de TRANSCRIÇÃO LITERAL de redações manuscritas em português brasileiro. Você NÃO é corretor, revisor nem editor.
+const SYSTEM_PROMPT = `Você é um mecanismo de TRANSCRIÇÃO LITERAL de redações manuscritas em português brasileiro. Você NÃO é corretor, revisor, editor nem intérprete.
 
 MISSÃO ÚNICA
-Reproduzir exatamente o texto manuscrito visível na folha, mantendo uma linha de saída para cada linha física escrita. A fidelidade visual é mais importante que a coerência da frase.
+Reproduzir EXATAMENTE o que está escrito à mão na folha. A fidelidade ao traço do aluno é mais importante do que a coerência da frase, do que a ortografia e do que qualquer suposição de contexto.
 
-PROIBIÇÕES ABSOLUTAS
-1. Não invente palavras.
-2. Não substitua letras por uma palavra "mais provável".
-3. Não complete palavras parcialmente legíveis.
-4. Não corrija ortografia, acentuação, pontuação, concordância, coesão ou gramática.
-5. Não reconstrua frases pelo contexto.
-6. Não divida uma linha física em duas linhas de saída.
-7. Não una linhas físicas diferentes.
-8. Não transcreva cabeçalho, tema impresso, instruções, marcações da folha ou números laterais.
+PROIBIÇÕES ABSOLUTAS (violá-las é falha crítica)
+1. NUNCA invente palavras.
+2. NUNCA substitua uma palavra pouco legível por outra "mais provável", foneticamente parecida ou semanticamente próxima.
+3. NUNCA complete palavras parcialmente legíveis a partir do contexto.
+4. NUNCA corrija ortografia, acentuação, pontuação, concordância, coesão, regência ou gramática.
+5. NUNCA reescreva, resuma, parafraseie ou reordene o texto.
+6. NUNCA adicione conteúdo que não está fisicamente escrito.
+7. NUNCA transcreva cabeçalho, tema impresso, instruções, rodapé, marcações da folha, números de linha laterais ou logotipos.
+8. Se você não tem certeza da leitura de uma palavra, é PROIBIDO chutar. Marque como dúvida.
 
-COMO LIDAR COM DÚVIDA
-- Se uma palavra estiver ilegível: escreva exatamente [ilegível].
-- Se apenas algumas letras forem visíveis: escreva as letras visíveis e marque dúvida, por exemplo [?con...?].
-- Se uma linha estiver muito ruim, transcreva [ilegível] naquela linha em vez de criar uma frase.
-- Se houver muitas dúvidas, reduza a confiança. Confiança baixa é melhor que texto inventado.
+COMO LIDAR COM DÚVIDA (obrigatório)
+- Palavra totalmente ilegível: escreva [ilegível].
+- Palavra parcialmente legível: escreva apenas as letras que você realmente enxerga, seguidas de "?" entre colchetes. Ex.: "gover[?no?]", "[?con?]seguir".
+- Linha inteira ilegível: escreva apenas [ilegível] naquela linha, sem inventar frase.
+- Confiança baixa é sempre preferível a texto inventado. Reduza o campo "confidence" sempre que houver dúvida.
 
-LINHAS — REGRA MAIS IMPORTANTE
-- Cada item de "lines" deve corresponder a UMA linha física da redação.
-- Não quebre linha por largura da tela ou por tamanho da frase.
-- Omita linhas totalmente em branco.
-- Se o aplicativo informar uma contagem visual aproximada, use-a apenas como auditoria de layout. Se discordar, explique em "notes" e reduza a confiança.
+ESTRUTURA DO TEXTO (regra crítica para a contagem de linhas)
+- Reproduza o texto agrupado por PARÁGRAFOS, não por linhas físicas. Uma palavra que continua na linha seguinte da folha faz parte do mesmo parágrafo — não crie quebra ali.
+- Insira uma quebra de parágrafo APENAS quando existir, na folha, um sinal claro de novo parágrafo: recuo (indentação no início da linha) ou linha em branco entre blocos de texto.
+- Não quebre uma frase em duas linhas de saída por causa da largura da folha.
+- Não insira linhas em branco extras entre parágrafos (uma única quebra basta).
+- Não coloque espaços no início ou no final das linhas.
+- Não use tabulações, hífens de fim de linha (una a palavra: "escre-" + "vendo" => "escrevendo") nem caracteres invisíveis.
 
 SAÍDA JSON ESTRITA
-Responda somente com JSON válido, sem markdown:
+Responda somente com JSON válido, sem markdown, sem comentários:
 {
-  "lines": ["linha física 1", "linha física 2"],
-  "line_count": 2,
+  "paragraphs": ["parágrafo 1 completo", "parágrafo 2 completo"],
+  "physical_line_count": 0,
   "confidence": 0,
   "low_confidence_words": ["[ilegível]", "[?trecho?]"],
   "notes": "observações objetivas sobre imagem/layout"
-}`;
+}
+
+- "paragraphs": lista com os parágrafos na ordem em que aparecem, cada item já com o texto completo do parágrafo (sem \\n internos).
+- "physical_line_count": número aproximado de linhas físicas manuscritas que você conseguiu contar na folha (apenas informativo, não influencia a saída).
+- "confidence": inteiro 0–100 refletindo sua certeza global de leitura literal.`;
+
 
 const makeEvent = (
   stage: DebugEvent["stage"],
@@ -111,10 +118,10 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const detectedLinesText =
+    const auditoriaVisual =
       typeof expectedLineCount === "number" && expectedLineCount > 0
-        ? `\nAuditoria visual do aplicativo: foram detectadas aproximadamente ${expectedLineCount} linhas manuscritas. Bandas normalizadas: ${JSON.stringify(lineBands ?? [])}. Use isso para evitar criar quebras artificiais, mas priorize a imagem se houver divergência clara.`
-        : "\nAuditoria visual do aplicativo: sem contagem confiável de linhas detectada.";
+        ? `\nObservação (apenas para você entender o layout, NÃO afeta a saída): o app detectou ~${expectedLineCount} linhas manuscritas na folha. Isso serve só para você calibrar sua leitura; NÃO tente casar esse número na saída, NÃO invente conteúdo para bater com ele e NÃO quebre parágrafos por causa dele.`
+        : "";
 
     debugEvents.push(
       makeEvent("ai_request_prepared", "ok", "Requisição OCR preparada com imagem original e versão pré-processada.", {
@@ -132,6 +139,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: OCR_MODEL,
         temperature: 0,
+        top_p: 0,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
@@ -140,14 +148,14 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: `Transcreva literalmente a redação manuscrita. Não melhore, não corrija, não complete, não adivinhe palavras. Use [ilegível] ou [?trecho?] quando houver dúvida. O texto final será enviado diretamente para correção, então cada linha deve corresponder à linha física da folha.${detectedLinesText}`,
+                text: `Transcreva LITERALMENTE a redação manuscrita desta imagem. Regras críticas:\n- Nunca invente uma palavra. Se não tem certeza, marque [ilegível] ou [?letras?].\n- Nunca corrija ortografia ou gramática.\n- Agrupe por parágrafos (não por linhas físicas). Só quebre parágrafo quando houver recuo ou linha em branco na folha.\n- Junte palavras hifenizadas no fim da linha.${auditoriaVisual}`,
               },
               { type: "image_url", image_url: { url: image } },
               ...(typeof processedImage === "string" && processedImage.length > 0
                 ? [
                     {
                       type: "text",
-                      text: "Versão pré-processada para leitura de contraste. Use apenas para enxergar melhor; não altere o conteúdo.",
+                      text: "Versão auxiliar com contraste aumentado. Use apenas se ajudar a enxergar o traço; a imagem original acima é a fonte da verdade. NÃO transcreva marcas ou artefatos criados pelo pré-processamento.",
                     },
                     { type: "image_url", image_url: { url: processedImage } },
                   ]
@@ -157,6 +165,7 @@ serve(async (req) => {
         ],
       }),
     });
+
 
     if (!response.ok) {
       const text = await response.text();
@@ -182,8 +191,10 @@ serve(async (req) => {
     debugEvents.push(makeEvent("ai_gateway", "ok", "Resposta bruta do OCR recebida.", { raw_chars: content.length }));
 
     let parsed: {
-      lines?: string[];
+      paragraphs?: string[];
+      lines?: string[]; // legado (retro-compat caso o modelo devolva no formato antigo)
       line_count?: number;
+      physical_line_count?: number;
       confidence?: number;
       low_confidence_words?: string[];
       notes?: string;
@@ -206,19 +217,64 @@ serve(async (req) => {
       );
     }
 
-    const lines = Array.isArray(parsed.lines) ? parsed.lines.filter((l) => typeof l === "string") : [];
-    const text = lines.join("\n");
+    // Sanitiza o texto do OCR sem modificar palavras: apenas normaliza quebras,
+    // remove caracteres invisíveis (que inflavam a contagem de linhas) e junta
+    // parágrafos com uma única quebra.
+    const sanitizeOcrString = (raw: string): string => {
+      let s = raw ?? "";
+      s = s.replace(/\r\n?/g, "\n");
+      s = s.replace(/[\u2028\u2029]/g, "\n");
+      // remove zero-width, BOM, soft-hyphen, LRM/RLM, WORD JOINER, OBJECT REPLACEMENT
+      s = s.replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF\u00AD\uFFFC]/g, "");
+      // NBSP e espaços unicode -> espaço normal
+      s = s.replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, " ");
+      s = s.replace(/\t+/g, " ");
+      // hífen no fim de linha (palavra quebrada) -> junta
+      s = s.replace(/([A-Za-zÀ-ÿ])-\n[ \t]*/g, "$1");
+      // quebras internas de linha dentro de um parágrafo -> espaço
+      s = s.replace(/[ \t]*\n[ \t]*(?!\n)/g, " ");
+      // colapsa espaços
+      s = s.replace(/ {2,}/g, " ");
+      // trim por linha
+      s = s.split("\n").map((l) => l.replace(/^[ \t]+|[ \t]+$/g, "")).join("\n");
+      return s.trim();
+    };
+
+    // Preferimos o formato novo (paragraphs). Retro-compat: se vier lines[],
+    // tratamos cada item como uma linha física e juntamos por espaço.
+    let paragraphs: string[] = [];
+    if (Array.isArray(parsed.paragraphs)) {
+      paragraphs = parsed.paragraphs
+        .filter((p): p is string => typeof p === "string")
+        .map((p) => sanitizeOcrString(p.replace(/\n+/g, " ")))
+        .filter((p) => p.length > 0);
+    } else if (Array.isArray(parsed.lines)) {
+      const joined = parsed.lines
+        .filter((l): l is string => typeof l === "string")
+        .map((l) => l.replace(/\s+$/g, ""))
+        .join(" ");
+      paragraphs = sanitizeOcrString(joined)
+        .split(/\n{2,}/)
+        .map((p) => p.trim())
+        .filter((p) => p.length > 0);
+    }
+
+    const text = paragraphs.join("\n");
     const reportedConfidence = typeof parsed.confidence === "number" ? Math.max(0, Math.min(100, parsed.confidence)) : 0;
+    const physicalLineCount = typeof parsed.physical_line_count === "number" ? parsed.physical_line_count : null;
     const expectedCount = typeof expectedLineCount === "number" && expectedLineCount > 0 ? expectedLineCount : null;
-    const lineDelta = expectedCount === null ? null : Math.abs(lines.length - expectedCount);
-    const adjustedConfidence = lineDelta !== null && lineDelta >= 3 ? Math.min(reportedConfidence, 60) : reportedConfidence;
+    // Só usamos physical_line_count vs expectedCount para calibrar confiança —
+    // NUNCA para alterar o texto. A contagem final da folha digital é feita no editor.
+    const referenceCount = physicalLineCount ?? null;
+    const lineDelta = expectedCount !== null && referenceCount !== null ? Math.abs(referenceCount - expectedCount) : null;
+    const adjustedConfidence = lineDelta !== null && lineDelta >= 5 ? Math.min(reportedConfidence, 60) : reportedConfidence;
     const lowConfidence = adjustedConfidence < LOW_CONFIDENCE_THRESHOLD;
 
     debugEvents.push(
-      makeEvent(lowConfidence ? "validation" : "validation", lowConfidence ? "warning" : "ok", lowConfidence ? "Confiança baixa; usuário deve refazer ou revisar a foto." : "Texto validado para preenchimento literal.", {
-        parsed_lines: lines.length,
-        model_reported_line_count: parsed.line_count ?? null,
-        expected_line_count: expectedCount,
+      makeEvent("validation", lowConfidence ? "warning" : "ok", lowConfidence ? "Confiança baixa; usuário deve refazer ou revisar a foto." : "Texto validado para preenchimento literal.", {
+        paragraphs_count: paragraphs.length,
+        model_reported_physical_lines: physicalLineCount,
+        expected_line_count_from_client: expectedCount,
         line_delta: lineDelta,
         confidence_reported: reportedConfidence,
         confidence_final: adjustedConfidence,
@@ -231,8 +287,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         text,
-        lines,
-        line_count: lines.length,
+        paragraphs,
+        // Mantido por compatibilidade com o cliente atual; representa parágrafos, não linhas físicas.
+        lines: paragraphs,
+        line_count: paragraphs.length,
+        physical_line_count: physicalLineCount,
         confidence: adjustedConfidence,
         low_confidence_words: Array.isArray(parsed.low_confidence_words) ? parsed.low_confidence_words : [],
         notes: typeof parsed.notes === "string" ? parsed.notes : "",
@@ -250,6 +309,7 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (e) {
     console.error("ocr-redacao error:", e);
     debugEvents.push(makeEvent("unhandled_error", "error", e instanceof Error ? e.message : "Erro desconhecido"));
