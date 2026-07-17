@@ -18,7 +18,7 @@ const Leaderboard = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.rpc("get_leaderboard", { _limit: 50 });
+      const { data } = await (supabase.rpc as any)("get_leaderboard", { _limit: 50 });
       if (!data) return;
       setRows(data as Row[]);
     })();
