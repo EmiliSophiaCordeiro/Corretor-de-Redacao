@@ -18,21 +18,9 @@ const Leaderboard = () => {
 
   useEffect(() => {
     (async () => {
-      const { data: stats } = await supabase
-        .from("user_stats")
-        .select("user_id, xp, level, current_streak, essays_completed")
-        .order("xp", { ascending: false })
-        .limit(50);
-
-      if (!stats) return;
-      const ids = stats.map((s) => s.user_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name")
-        .in("user_id", ids);
-
-      const map = new Map(profiles?.map((p) => [p.user_id, p.display_name]) || []);
-      setRows(stats.map((s) => ({ ...s, display_name: map.get(s.user_id) })));
+      const { data } = await supabase.rpc("get_leaderboard", { _limit: 50 });
+      if (!data) return;
+      setRows(data as Row[]);
     })();
   }, []);
 
