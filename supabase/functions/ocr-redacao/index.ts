@@ -191,8 +191,10 @@ serve(async (req) => {
     debugEvents.push(makeEvent("ai_gateway", "ok", "Resposta bruta do OCR recebida.", { raw_chars: content.length }));
 
     let parsed: {
-      lines?: string[];
+      paragraphs?: string[];
+      lines?: string[]; // legado (retro-compat caso o modelo devolva no formato antigo)
       line_count?: number;
+      physical_line_count?: number;
       confidence?: number;
       low_confidence_words?: string[];
       notes?: string;
@@ -215,19 +217,64 @@ serve(async (req) => {
       );
     }
 
-    const lines = Array.isArray(parsed.lines) ? parsed.lines.filter((l) => typeof l === "string") : [];
-    const text = lines.join("\n");
+    // Sanitiza o texto do OCR sem modificar palavras: apenas normaliza quebras,
+    // remove caracteres invisíveis (que inflavam a contagem de linhas) e junta
+    // parágrafos com uma única quebra.
+    const sanitizeOcrString = (raw: string): string => {
+      let s = raw ?? "";
+      s = s.replace(/\r\n?/g, "\n");
+      s = s.replace(/[\u2028\u2029]/g, "\n");
+      // remove zero-width, BOM, soft-hyphen, LRM/RLM, WORD JOINER, OBJECT REPLACEMENT
+      s = s.replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF\u00AD\uFFFC]/g, "");
+      // NBSP e espaços unicode -> espaço normal
+      s = s.replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, " ");
+      s = s.replace(/\t+/g, " ");
+      // hífen no fim de linha (palavra quebrada) -> junta
+      s = s.replace(/([A-Za-zÀ-ÿ])-\n[ \t]*/g, "$1");
+      // quebras internas de linha dentro de um parágrafo -> espaço
+      s = s.replace(/[ \t]*\n[ \t]*(?!\n)/g, " ");
+      // colapsa espaços
+      s = s.replace(/ {2,}/g, " ");
+      // trim por linha
+      s = s.split("\n").map((l) => l.replace(/^[ \t]+|[ \t]+$/g, "")).join("\n");
+      return s.trim();
+    };
+
+    // Preferimos o formato novo (paragraphs). Retro-compat: se vier lines[],
+    // tratamos cada item como uma linha física e juntamos por espaço.
+    let paragraphs: string[] = [];
+    if (Array.isArray(parsed.paragraphs)) {
+      paragraphs = parsed.paragraphs
+        .filter((p): p is string => typeof p === "string")
+        .map((p) => sanitizeOcrString(p.replace(/\n+/g, " ")))
+        .filter((p) => p.length > 0);
+    } else if (Array.isArray(parsed.lines)) {
+      const joined = parsed.lines
+        .filter((l): l is string => typeof l === "string")
+        .map((l) => l.replace(/\s+$/g, ""))
+        .join(" ");
+      paragraphs = sanitizeOcrString(joined)
+        .split(/\n{2,}/)
+        .map((p) => p.trim())
+        .filter((p) => p.length > 0);
+    }
+
+    const text = paragraphs.join("\n");
     const reportedConfidence = typeof parsed.confidence === "number" ? Math.max(0, Math.min(100, parsed.confidence)) : 0;
+    const physicalLineCount = typeof parsed.physical_line_count === "number" ? parsed.physical_line_count : null;
     const expectedCount = typeof expectedLineCount === "number" && expectedLineCount > 0 ? expectedLineCount : null;
-    const lineDelta = expectedCount === null ? null : Math.abs(lines.length - expectedCount);
-    const adjustedConfidence = lineDelta !== null && lineDelta >= 3 ? Math.min(reportedConfidence, 60) : reportedConfidence;
+    // Só usamos physical_line_count vs expectedCount para calibrar confiança —
+    // NUNCA para alterar o texto. A contagem final da folha digital é feita no editor.
+    const referenceCount = physicalLineCount ?? null;
+    const lineDelta = expectedCount !== null && referenceCount !== null ? Math.abs(referenceCount - expectedCount) : null;
+    const adjustedConfidence = lineDelta !== null && lineDelta >= 5 ? Math.min(reportedConfidence, 60) : reportedConfidence;
     const lowConfidence = adjustedConfidence < LOW_CONFIDENCE_THRESHOLD;
 
     debugEvents.push(
-      makeEvent(lowConfidence ? "validation" : "validation", lowConfidence ? "warning" : "ok", lowConfidence ? "Confiança baixa; usuário deve refazer ou revisar a foto." : "Texto validado para preenchimento literal.", {
-        parsed_lines: lines.length,
-        model_reported_line_count: parsed.line_count ?? null,
-        expected_line_count: expectedCount,
+      makeEvent("validation", lowConfidence ? "warning" : "ok", lowConfidence ? "Confiança baixa; usuário deve refazer ou revisar a foto." : "Texto validado para preenchimento literal.", {
+        paragraphs_count: paragraphs.length,
+        model_reported_physical_lines: physicalLineCount,
+        expected_line_count_from_client: expectedCount,
         line_delta: lineDelta,
         confidence_reported: reportedConfidence,
         confidence_final: adjustedConfidence,
@@ -240,8 +287,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         text,
-        lines,
-        line_count: lines.length,
+        paragraphs,
+        // Mantido por compatibilidade com o cliente atual; representa parágrafos, não linhas físicas.
+        lines: paragraphs,
+        line_count: paragraphs.length,
+        physical_line_count: physicalLineCount,
         confidence: adjustedConfidence,
         low_confidence_words: Array.isArray(parsed.low_confidence_words) ? parsed.low_confidence_words : [],
         notes: typeof parsed.notes === "string" ? parsed.notes : "",
@@ -259,6 +309,7 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (e) {
     console.error("ocr-redacao error:", e);
     debugEvents.push(makeEvent("unhandled_error", "error", e instanceof Error ? e.message : "Erro desconhecido"));
