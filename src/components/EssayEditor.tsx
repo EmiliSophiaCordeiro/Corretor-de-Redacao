@@ -53,6 +53,58 @@ const EssayEditor = ({ onSubmit, initialText }: EssayEditorProps) => {
     setText(e.target.value);
   };
 
+  // Sanitize text pasted from Word, Google Docs, PDF, browsers, etc.
+  // Goal: keep only the real paragraph structure so the essay occupies
+  // roughly the same number of lines as in the source document.
+  const sanitizePastedText = (raw: string): string => {
+    let s = raw;
+    // Normalize all line breaks (\r\n, \r, unicode separators) to \n
+    s = s.replace(/\r\n?/g, "\n");
+    s = s.replace(/\u2028|\u2029/g, "\n");
+    // Remove invisible/zero-width characters commonly injected by Word/GDocs/PDF
+    s = s.replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF\u00AD\uFFFC]/g, "");
+    // Convert non-breaking spaces and other unicode spaces to regular spaces
+    s = s.replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, " ");
+    // Tabs -> single space
+    s = s.replace(/\t+/g, " ");
+    // Collapse runs of spaces
+    s = s.replace(/ {2,}/g, " ");
+    // Mark real paragraph breaks (blank line separators) with a sentinel
+    s = s.replace(/\n[ \t]*\n(?:[ \t]*\n)*/g, "\u0001");
+    // Remaining single newlines are soft wraps from PDF/Word -> join with space
+    s = s.replace(/\n+/g, " ");
+    // Restore real paragraph breaks
+    s = s.replace(/\u0001/g, "\n");
+    // Trim whitespace at start/end of each line
+    s = s
+      .split("\n")
+      .map((line) => line.replace(/^[ \t]+|[ \t]+$/g, ""))
+      .join("\n");
+    // Collapse spaces again after trimming
+    s = s.replace(/ {2,}/g, " ");
+    return s.trim();
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const clipboard = e.clipboardData;
+    if (!clipboard) return;
+    const raw = clipboard.getData("text/plain") ?? "";
+    if (!raw) return;
+    e.preventDefault();
+    const cleaned = sanitizePastedText(raw);
+    const ta = e.currentTarget;
+    const start = ta.selectionStart ?? text.length;
+    const end = ta.selectionEnd ?? text.length;
+    const next = text.slice(0, start) + cleaned + text.slice(end);
+    setText(next);
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      const pos = start + cleaned.length;
+      el.selectionStart = el.selectionEnd = pos;
+    });
+  };
+
   const handleScroll = () => {
     if (textareaRef.current && lineNumbersRef.current) {
       lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
