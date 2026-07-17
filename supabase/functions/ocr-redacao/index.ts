@@ -118,10 +118,10 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const detectedLinesText =
+    const auditoriaVisual =
       typeof expectedLineCount === "number" && expectedLineCount > 0
-        ? `\nAuditoria visual do aplicativo: foram detectadas aproximadamente ${expectedLineCount} linhas manuscritas. Bandas normalizadas: ${JSON.stringify(lineBands ?? [])}. Use isso para evitar criar quebras artificiais, mas priorize a imagem se houver divergência clara.`
-        : "\nAuditoria visual do aplicativo: sem contagem confiável de linhas detectada.";
+        ? `\nObservação (apenas para você entender o layout, NÃO afeta a saída): o app detectou ~${expectedLineCount} linhas manuscritas na folha. Isso serve só para você calibrar sua leitura; NÃO tente casar esse número na saída, NÃO invente conteúdo para bater com ele e NÃO quebre parágrafos por causa dele.`
+        : "";
 
     debugEvents.push(
       makeEvent("ai_request_prepared", "ok", "Requisição OCR preparada com imagem original e versão pré-processada.", {
@@ -139,6 +139,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: OCR_MODEL,
         temperature: 0,
+        top_p: 0,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
@@ -147,14 +148,14 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: `Transcreva literalmente a redação manuscrita. Não melhore, não corrija, não complete, não adivinhe palavras. Use [ilegível] ou [?trecho?] quando houver dúvida. O texto final será enviado diretamente para correção, então cada linha deve corresponder à linha física da folha.${detectedLinesText}`,
+                text: `Transcreva LITERALMENTE a redação manuscrita desta imagem. Regras críticas:\n- Nunca invente uma palavra. Se não tem certeza, marque [ilegível] ou [?letras?].\n- Nunca corrija ortografia ou gramática.\n- Agrupe por parágrafos (não por linhas físicas). Só quebre parágrafo quando houver recuo ou linha em branco na folha.\n- Junte palavras hifenizadas no fim da linha.${auditoriaVisual}`,
               },
               { type: "image_url", image_url: { url: image } },
               ...(typeof processedImage === "string" && processedImage.length > 0
                 ? [
                     {
                       type: "text",
-                      text: "Versão pré-processada para leitura de contraste. Use apenas para enxergar melhor; não altere o conteúdo.",
+                      text: "Versão auxiliar com contraste aumentado. Use apenas se ajudar a enxergar o traço; a imagem original acima é a fonte da verdade. NÃO transcreva marcas ou artefatos criados pelo pré-processamento.",
                     },
                     { type: "image_url", image_url: { url: processedImage } },
                   ]
@@ -164,6 +165,7 @@ serve(async (req) => {
         ],
       }),
     });
+
 
     if (!response.ok) {
       const text = await response.text();
