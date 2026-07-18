@@ -39,7 +39,8 @@ const SettingsPage = () => {
   const [bio, setBio] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [prefs, setPrefs] = useState<any>(defaultPrefs);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const avatarUrl = useResolvedAvatar(avatarPath);
   const [newPassword, setNewPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
 
