@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import { uploadAvatarFile, useResolvedAvatar } from "@/lib/avatar";
 
 type TabId = "conta" | "aparencia" | "notificacoes" | "privacidade" | "acessibilidade" | "dados" | "suporte";
 
