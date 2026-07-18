@@ -22,7 +22,7 @@ const Profile = () => {
       .then(({ data }) => {
         setDisplayName(data?.display_name || "");
         setBio((data as any)?.bio || "");
-        setAvatarUrl((data as any)?.avatar_url || null);
+        setAvatarPath((data as any)?.avatar_url || null);
       });
   }, [user?.id]);
 
