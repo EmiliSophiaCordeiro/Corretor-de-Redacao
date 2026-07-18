@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { useResolvedAvatar } from "@/lib/avatar";
 
 const CATEGORIES = [
   { id: "geral",        label: "Geral",                color: "bg-slate-500" },
