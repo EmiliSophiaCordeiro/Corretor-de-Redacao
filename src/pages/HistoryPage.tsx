@@ -77,12 +77,13 @@ const HistoryPage = () => {
                     <Calendar className="h-3 w-3" />
                     {new Date(item.created_at).toLocaleDateString("pt-BR")}
                   </span>
-                  <span
+                  <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive cursor-pointer"
+                    aria-label="Excluir redação"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                  </span>
+                  </button>
                 </div>
               </button>
             );

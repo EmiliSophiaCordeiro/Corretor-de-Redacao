@@ -165,24 +165,24 @@ const SettingsPage = () => {
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
                 </label>
               </div>
-              <Field label="Nome de exibição">
-                <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+              <Field label="Nome de exibição" htmlFor="displayName">
+                <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
               </Field>
-              <Field label="Bio">
-                <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={300} placeholder="Conte um pouco sobre você..." />
+              <Field label="Bio" htmlFor="bio">
+                <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={300} placeholder="Conte um pouco sobre você..." />
               </Field>
               <Button onClick={saveAccount} className="gradient-primary text-primary-foreground border-0">Salvar perfil</Button>
 
               <Divider />
-              <Field label="Email">
+              <Field label="Email" htmlFor="email">
                 <div className="flex gap-2">
-                  <Input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+                  <Input id="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
                   <Button variant="outline" onClick={changeEmail}>Alterar</Button>
                 </div>
               </Field>
-              <Field label="Nova senha">
+              <Field label="Nova senha" htmlFor="newPassword">
                 <div className="flex gap-2">
-                  <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
+                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
                   <Button variant="outline" onClick={changePassword}>Alterar</Button>
                 </div>
               </Field>
@@ -280,9 +280,9 @@ const Section = ({ title, children }: any) => (
     {children}
   </div>
 );
-const Field = ({ label, children }: any) => (
+const Field = ({ label, htmlFor, children }: any) => (
   <div>
-    <label className="font-mono-score text-[10px] uppercase tracking-widest text-muted-foreground block mb-1.5">{label}</label>
+    <label htmlFor={htmlFor} className="font-mono-score text-[10px] uppercase tracking-widest text-muted-foreground block mb-1.5">{label}</label>
     {children}
   </div>
 );
