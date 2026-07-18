@@ -593,6 +593,44 @@ export type Database = {
           xp: number
         }[]
       }
+      purchase_mascot_item: {
+        Args: { _item_id: string }
+        Returns: {
+          acquired_at: string
+          equipped: boolean
+          id: string
+          item_id: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_inventory"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      record_max_score: {
+        Args: { _score: number }
+        Returns: {
+          created_at: string
+          current_streak: number
+          essays_completed: number
+          last_activity_date: string | null
+          level: number
+          longest_streak: number
+          max_score: number
+          points: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_stats"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       xp_for_level: { Args: { _level: number }; Returns: number }
     }
     Enums: {
