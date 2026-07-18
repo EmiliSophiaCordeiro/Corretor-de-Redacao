@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import { uploadAvatarFile, useResolvedAvatar } from "@/lib/avatar";
 
 type TabId = "conta" | "aparencia" | "notificacoes" | "privacidade" | "acessibilidade" | "dados" | "suporte";
 
@@ -38,7 +39,8 @@ const SettingsPage = () => {
   const [bio, setBio] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [prefs, setPrefs] = useState<any>(defaultPrefs);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const avatarUrl = useResolvedAvatar(avatarPath);
   const [newPassword, setNewPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
 
@@ -51,7 +53,7 @@ const SettingsPage = () => {
         setBio((data as any).bio || "");
         setIsPublic((data as any).is_public ?? true);
         setPrefs({ ...defaultPrefs, ...((data as any).preferences || {}) });
-        setAvatarUrl(data.avatar_url || null);
+        setAvatarPath(data.avatar_url || null);
       });
     setNewEmail(user.email || "");
   }, [user?.id]);
@@ -90,17 +92,14 @@ const SettingsPage = () => {
 
   const uploadAvatar = async (file: File) => {
     if (!user) return;
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/avatar.${ext}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-    if (error) return toast.error(error.message);
-    const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
-    const url = data?.signedUrl;
-    if (url) {
-      await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
-      setAvatarUrl(url);
+    try {
+      const path = await uploadAvatarFile(user.id, file);
+      await supabase.from("profiles").update({ avatar_url: path }).eq("user_id", user.id);
+      setAvatarPath(path);
+      toast.success("Foto atualizada");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao enviar foto");
     }
-    toast.success("Foto atualizada");
   };
 
   const exportData = async () => {

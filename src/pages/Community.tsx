@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { useResolvedAvatar } from "@/lib/avatar";
 
 const CATEGORIES = [
   { id: "geral",        label: "Geral",                color: "bg-slate-500" },
@@ -218,12 +219,14 @@ const PostCard = ({ post, onOpen, onLike, onDelete, onReport, isOwner }: any) =>
   );
 };
 
-const Avatar = ({ url, name }: { url?: string | null; name?: string | null }) => (
-  url ? <img src={url} alt="" className="h-9 w-9 rounded-full object-cover" />
-       : <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
-           {(name || "?").charAt(0).toUpperCase()}
-         </div>
-);
+const Avatar = ({ url, name }: { url?: string | null; name?: string | null }) => {
+  const resolved = useResolvedAvatar(url);
+  return resolved
+    ? <img src={resolved} alt="" className="h-9 w-9 rounded-full object-cover" />
+    : <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+        {(name || "?").charAt(0).toUpperCase()}
+      </div>;
+};
 
 const Composer = ({ open, onClose, onCreated, editing }: { open: boolean; onClose: () => void; onCreated: () => void; editing?: Post }) => {
   const { user } = useAuth();

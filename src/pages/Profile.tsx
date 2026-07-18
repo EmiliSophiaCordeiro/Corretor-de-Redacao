@@ -5,13 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import Mascot from "@/components/Mascot";
 import { toast } from "sonner";
 import { Camera } from "lucide-react";
+import { uploadAvatarFile, useResolvedAvatar } from "@/lib/avatar";
 
 const Profile = () => {
   const { user } = useAuth();
   const { stats } = useUserStats();
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const avatarUrl = useResolvedAvatar(avatarPath);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -20,7 +22,7 @@ const Profile = () => {
       .then(({ data }) => {
         setDisplayName(data?.display_name || "");
         setBio((data as any)?.bio || "");
-        setAvatarUrl((data as any)?.avatar_url || null);
+        setAvatarPath((data as any)?.avatar_url || null);
       });
   }, [user?.id]);
 
@@ -35,17 +37,14 @@ const Profile = () => {
 
   const upload = async (file: File) => {
     if (!user) return;
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/avatar.${ext}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-    if (error) return toast.error(error.message);
-    const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
-    const url = data?.signedUrl;
-    if (url) {
-      await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
-      setAvatarUrl(url);
+    try {
+      const path = await uploadAvatarFile(user.id, file);
+      await supabase.from("profiles").update({ avatar_url: path }).eq("user_id", user.id);
+      setAvatarPath(path);
+      toast.success("Foto atualizada");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao enviar foto");
     }
-    toast.success("Foto atualizada");
   };
 
   return (
