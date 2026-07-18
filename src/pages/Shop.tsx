@@ -98,21 +98,16 @@ const Shop = () => {
       toast.error("Pontos insuficientes");
       return;
     }
-    const { error } = await supabase
-      .from("user_inventory")
-      .insert({ user_id: user.id, item_id: item.id });
+    const { error } = await supabase.rpc("purchase_mascot_item" as any, { _item_id: item.id });
     if (error) {
-      toast.error("Erro ao comprar");
+      toast.error(error.message || "Erro ao comprar");
       return;
     }
-    await supabase
-      .from("user_stats")
-      .update({ points: stats.points - item.price })
-      .eq("user_id", user.id);
     await refetch();
     await load();
     toast.success(`${item.name} desbloqueado!`, { icon: item.preview_emoji || "🎉" });
   };
+
 
   const toggleEquip = async (item: Item) => {
     if (!user) return;
