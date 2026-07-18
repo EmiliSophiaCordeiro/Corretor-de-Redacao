@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Mascot from "@/components/Mascot";
 import { toast } from "sonner";
 import { Camera } from "lucide-react";
+import { uploadAvatarFile, useResolvedAvatar } from "@/lib/avatar";
 
 const Profile = () => {
   const { user } = useAuth();
