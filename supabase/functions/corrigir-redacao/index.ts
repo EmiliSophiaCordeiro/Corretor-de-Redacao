@@ -88,7 +88,29 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+    );
+    const { data: userData, error: userErr } = await supabase.auth.getUser(
+      authHeader.replace("Bearer ", ""),
+    );
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { essay, theme, mode_prompt, mode_name, calibration } = await req.json();
+
 
     console.log("corrigir-redacao payload", JSON.stringify({
       essay_chars: typeof essay === "string" ? essay.length : 0,
