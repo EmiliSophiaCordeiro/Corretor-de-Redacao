@@ -53,7 +53,7 @@ const SettingsPage = () => {
         setBio((data as any).bio || "");
         setIsPublic((data as any).is_public ?? true);
         setPrefs({ ...defaultPrefs, ...((data as any).preferences || {}) });
-        setAvatarUrl(data.avatar_url || null);
+        setAvatarPath(data.avatar_url || null);
       });
     setNewEmail(user.email || "");
   }, [user?.id]);
