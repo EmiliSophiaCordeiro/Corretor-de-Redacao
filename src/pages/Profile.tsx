@@ -12,7 +12,8 @@ const Profile = () => {
   const { stats } = useUserStats();
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const avatarUrl = useResolvedAvatar(avatarPath);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
