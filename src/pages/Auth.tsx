@@ -5,6 +5,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import CarracoLogo from "@/components/CarracoLogo";
 import Mascot from "@/components/Mascot";
 import { toast } from "sonner";
+import Seo from "@/components/Seo";
 
 const Auth = () => {
   const { user, loading } = useAuth();
@@ -56,6 +57,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen gradient-hero flex items-center justify-center px-4 py-8">
+      <Seo title='Entrar ou Criar Conta | Carraco' description='Acesse sua conta Carraco para escrever redações, corrigir com IA e evoluir no ranking.' path="/auth" />
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
           <div className="animate-float mb-3"><Mascot size={100} mood="wink" /></div>

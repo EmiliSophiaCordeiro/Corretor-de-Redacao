@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Target, Zap, Coins } from "lucide-react";
+import Seo from "@/components/Seo";
 
 interface Challenge {
   id: string;
@@ -38,6 +39,7 @@ const Challenges = () => {
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6">
+      <Seo title='Desafios Diários | Carraco' description='Complete desafios diários de escrita, mantenha sua ofensiva e ganhe recompensas exclusivas.' path="/challenges" />
       <div className="flex items-center gap-3 mb-6">
         <div className="h-12 w-12 rounded-2xl gradient-primary flex items-center justify-center glow">
           <Target className="h-6 w-6 text-primary-foreground" />

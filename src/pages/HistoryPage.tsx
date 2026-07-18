@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, Calendar, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import Seo from "@/components/Seo";
 
 interface Item {
   id: string;
@@ -41,6 +42,7 @@ const HistoryPage = () => {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-6">
+      <Seo title='Histórico de Redações | Carraco' description='Reveja todas as suas redações corrigidas, notas por competência e evolução ao longo do tempo.' path="/history" />
       <h1 className="text-2xl font-display font-bold mb-1">Histórico</h1>
       <p className="text-sm text-muted-foreground mb-6">Todas as redações que você enviou.</p>
 

@@ -6,6 +6,7 @@ import { useEquippedMascot } from "@/hooks/useEquippedMascot";
 import Mascot from "@/components/Mascot";
 import { Coins, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import Seo from "@/components/Seo";
 
 interface Item {
   id: string;
@@ -138,6 +139,7 @@ const Shop = () => {
 
   return (
     <div className="container max-w-5xl mx-auto px-4 py-6">
+      <Seo title='Loja do Mascote | Carraco' description='Gaste seus pontos em roupas, cabelos, acessórios e pacotes premium para personalizar seu mascote.' path="/shop" />
       <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
         <div className="flex items-center gap-4">
           <Mascot size={80} />

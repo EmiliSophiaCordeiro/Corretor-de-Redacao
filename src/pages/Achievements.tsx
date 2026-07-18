@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
 import { Sparkles, Lock, Check, Trophy, Zap, Target } from "lucide-react";
+import Seo from "@/components/Seo";
 
 interface Achievement {
   id: string;
@@ -129,6 +130,7 @@ const Achievements = () => {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-6">
+      <Seo title='Conquistas | Carraco' description='Desbloqueie conquistas ao evoluir suas redações, competências e ofensivas de escrita no Carraco.' path="/achievements" />
       {/* Header stats */}
       <div className="rounded-3xl gradient-hero border border-border p-6 mb-6">
         <div className="flex items-center gap-3 mb-4">

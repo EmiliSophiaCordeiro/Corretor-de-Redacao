@@ -5,6 +5,7 @@ import { useUserStats, xpForLevel } from "@/hooks/useUserStats";
 import { supabase } from "@/integrations/supabase/client";
 import Mascot from "@/components/Mascot";
 import { PenLine, Flame, Trophy, Target, ArrowRight, Sparkles, TrendingUp } from "lucide-react";
+import Seo from "@/components/Seo";
 
 interface DailyChallenge {
   id: string;
@@ -44,6 +45,7 @@ const Home = () => {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <Seo title='Início | Carraco' description='Escreva redações no Carraco, ganhe XP, suba de nível e acompanhe seu progresso rumo à nota mil no ENEM.' path="/" />
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl gradient-hero border border-border p-6 md:p-8">
         <div className="grid md:grid-cols-[1fr_auto] items-center gap-6">
