@@ -91,11 +91,33 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const authClient = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+  );
+  const { data: userData, error: userErr } = await authClient.auth.getUser(
+    authHeader.replace("Bearer ", ""),
+  );
+  if (userErr || !userData?.user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const runId = crypto.randomUUID();
   const debugEvents: DebugEvent[] = [];
 
   try {
     const startedAt = performance.now();
+
     const body = await req.json();
     const { image, processedImage, expectedLineCount, lineBands } = body;
 
