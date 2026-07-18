@@ -66,19 +66,7 @@ const Studio = () => {
       const xpEarned = 50 + Math.floor(totalScore / 10);
       const pointsEarned = 30 + Math.floor(totalScore / 20);
 
-      await supabase.rpc("award_xp", {
-        _user_id: user.id,
-        _xp: xpEarned,
-        _points: pointsEarned,
-      });
-
-      // Track max score for achievements
-      const { data: curStats } = await supabase
-        .from("user_stats").select("max_score").eq("user_id", user.id).maybeSingle();
-      if ((curStats?.max_score ?? 0) < totalScore) {
-        await supabase.from("user_stats").update({ max_score: totalScore } as any).eq("user_id", user.id);
-      }
-
+      // Persist correction first so record_max_score can validate it
       await supabase.from("correction_history").insert({
         user_id: user.id,
         theme,
@@ -86,6 +74,15 @@ const Studio = () => {
         mode_name: selectedMode?.name || "ENEM Padrão",
         result_json: data,
       });
+
+      await supabase.rpc("award_xp", {
+        _user_id: user.id,
+        _xp: xpEarned,
+        _points: pointsEarned,
+      });
+
+      await supabase.rpc("record_max_score" as any, { _score: totalScore });
+
 
       // Auto-unlock achievements based on new stats
       await supabase.rpc("check_and_unlock_achievements" as any, { _user_id: user.id });
