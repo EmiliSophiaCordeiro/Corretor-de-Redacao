@@ -82,7 +82,7 @@ const Pricing = () => {
               {p.name.includes("PRO") ? <Crown className="h-5 w-5" /> :
                p.name.includes("PLUS") ? <Sparkles className="h-5 w-5" /> :
                <Zap className="h-5 w-5" />}
-              <h3 className="font-display font-bold text-lg">{p.name}</h3>
+              <h2 className="font-display font-bold text-lg">{p.name}</h2>
             </div>
             <p className={`text-sm mb-5 ${p.highlight ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
               {p.description}

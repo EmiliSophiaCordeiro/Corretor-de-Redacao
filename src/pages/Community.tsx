@@ -185,7 +185,7 @@ const PostCard = ({ post, onOpen, onLike, onDelete, onReport, isOwner }: any) =>
           </div>
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center">
+          <DropdownMenuTrigger aria-label="Opções da publicação" className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center">
             <MoreVertical className="h-4 w-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -364,7 +364,7 @@ const PostDialog = ({ post, onClose }: { post: Post; onClose: () => void }) => {
             <Input value={newComment} onChange={(e) => setNewComment(e.target.value)}
               placeholder="Escreva um comentário..."
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), submitComment())} />
-            <Button onClick={submitComment} size="icon" className="gradient-primary text-primary-foreground border-0">
+            <Button onClick={submitComment} size="icon" aria-label="Enviar comentário" className="gradient-primary text-primary-foreground border-0">
               <Send className="h-4 w-4" />
             </Button>
           </div>
