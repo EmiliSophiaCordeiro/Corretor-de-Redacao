@@ -1,4 +1,5 @@
 import { Check, Crown, Sparkles, Zap } from "lucide-react";
+import Seo from "@/components/Seo";
 
 const plans = [
   {
@@ -53,6 +54,7 @@ const plans = [
 const Pricing = () => {
   return (
     <div className="container max-w-6xl mx-auto px-4 py-10">
+      <Seo title='Planos e Preços | Carraco' description='Escolha o plano Carraco ideal: correções ilimitadas, IA avançada e recursos premium para o ENEM.' path="/pricing" />
       <div className="text-center mb-10">
         <p className="font-mono-score text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3">Planos</p>
         <h1 className="text-3xl md:text-5xl font-display font-bold mb-3">

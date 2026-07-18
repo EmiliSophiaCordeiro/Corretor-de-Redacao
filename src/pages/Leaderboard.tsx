@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Trophy, Flame, Crown, Medal } from "lucide-react";
+import Seo from "@/components/Seo";
 
 interface Row {
   user_id: string;
@@ -26,6 +27,7 @@ const Leaderboard = () => {
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6">
+      <Seo title='Ranking | Carraco' description='Veja o ranking dos melhores redatores do Carraco por XP, nível e nota máxima ENEM.' path="/leaderboard" />
       <div className="flex items-center gap-3 mb-6">
         <div className="h-12 w-12 rounded-2xl gradient-primary flex items-center justify-center glow">
           <Trophy className="h-6 w-6 text-primary-foreground" />

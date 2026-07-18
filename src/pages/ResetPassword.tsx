@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Shield, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import Seo from "@/components/Seo";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -43,6 +44,7 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <Seo title='Redefinir Senha | Carraco' description='Redefina a senha da sua conta Carraco com segurança em poucos passos.' path="/reset-password" />
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <Shield className="h-8 w-8 text-destructive mb-4" />

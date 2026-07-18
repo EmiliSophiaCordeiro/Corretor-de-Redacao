@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useResolvedAvatar } from "@/lib/avatar";
+import Seo from "@/components/Seo";
 
 const CATEGORIES = [
   { id: "geral",        label: "Geral",                color: "bg-slate-500" },
@@ -116,6 +117,7 @@ const Community = () => {
 
   return (
     <div className="container max-w-3xl mx-auto px-4 py-6">
+      <Seo title='Comunidade | Carraco' description='Compartilhe redações, comente, curta e troque dicas com outros estudantes na comunidade Carraco.' path="/community" />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold">Comunidade</h1>

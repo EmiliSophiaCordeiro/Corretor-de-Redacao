@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { uploadAvatarFile, useResolvedAvatar } from "@/lib/avatar";
+import Seo from "@/components/Seo";
 
 type TabId = "conta" | "aparencia" | "notificacoes" | "privacidade" | "acessibilidade" | "dados" | "suporte";
 
@@ -132,6 +133,7 @@ const SettingsPage = () => {
 
   return (
     <div className="container max-w-5xl mx-auto px-4 py-6">
+      <Seo title='Configurações | Carraco' description='Ajuste tema, acessibilidade, notificações, conta e privacidade da sua experiência no Carraco.' path="/settings" />
       <h1 className="text-2xl font-display font-bold mb-1">Configurações</h1>
       <p className="text-sm text-muted-foreground mb-6">Personalize sua experiência no Carraco</p>
 

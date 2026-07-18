@@ -6,6 +6,7 @@ import Mascot from "@/components/Mascot";
 import { toast } from "sonner";
 import { Camera } from "lucide-react";
 import { uploadAvatarFile, useResolvedAvatar } from "@/lib/avatar";
+import Seo from "@/components/Seo";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -49,6 +50,7 @@ const Profile = () => {
 
   return (
     <div className="container max-w-3xl mx-auto px-4 py-6">
+      <Seo title='Meu Perfil | Carraco' description='Acompanhe seu nível, XP, ofensiva, conquistas e evolução como redator no seu perfil Carraco.' path="/profile" />
       <div className="rounded-3xl gradient-hero border border-border p-6 mb-6 flex items-center gap-6 flex-wrap">
         <div className="relative">
           {avatarUrl

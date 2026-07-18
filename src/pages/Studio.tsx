@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
 import Mascot from "@/components/Mascot";
 import { Sparkles } from "lucide-react";
+import Seo from "@/components/Seo";
 
 const Studio = () => {
   const { user } = useAuth();
@@ -102,6 +103,7 @@ const Studio = () => {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <Seo title='Estúdio de Redação | Carraco' description='Escreva, envie por foto e receba correção ENEM detalhada com IA no Estúdio Carraco.' path="/studio" />
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold">Estúdio de Redação</h1>
