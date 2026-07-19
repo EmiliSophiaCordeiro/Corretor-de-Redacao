@@ -126,9 +126,17 @@ const SettingsPage = () => {
   };
 
   const deleteAccount = async () => {
-    if (!confirm("Tem certeza? Esta ação é irreversível.")) return;
+    if (!confirm("Tem certeza? Esta ação é irreversível e apaga todos os seus dados (LGPD).")) return;
     if (prompt("Digite EXCLUIR para confirmar:") !== "EXCLUIR") return;
-    toast.error("Para excluir sua conta, entre em contato com o suporte.");
+    try {
+      const { error } = await supabase.functions.invoke("delete-account");
+      if (error) throw error;
+      toast.success("Conta excluída. Até logo!");
+      await signOut();
+      window.location.href = "/";
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao excluir conta");
+    }
   };
 
   return (
