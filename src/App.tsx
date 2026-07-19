@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import AppLayout from "@/components/AppLayout";
+import CookieBanner from "@/components/CookieBanner";
 import Home from "./pages/Home";
 import Studio from "./pages/Studio";
 import HistoryPage from "./pages/HistoryPage";
@@ -20,6 +21,9 @@ import SettingsPage from "./pages/SettingsPage";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import Privacy from "./pages/legal/Privacy";
+import Terms from "./pages/legal/Terms";
+import CookiesPolicy from "./pages/legal/Cookies";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +38,9 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/cookies" element={<CookiesPolicy />} />
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/studio" element={<Studio />} />
@@ -49,6 +56,7 @@ const App = () => (
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <CookieBanner />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

@@ -146,6 +146,13 @@ const Auth = () => {
             {isLogin ? "Criar conta" : "Fazer login"}
           </button>
         </p>
+        {!isLogin && (
+          <p className="text-center text-[11px] text-muted-foreground mt-2">
+            Ao criar uma conta você aceita nossos{" "}
+            <a href="/terms" className="underline">Termos</a> e{" "}
+            <a href="/privacy" className="underline">Política de Privacidade</a>.
+          </p>
+        )}
       </div>
     </div>
   );
