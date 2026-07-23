@@ -33,17 +33,18 @@ const ResetPassword = () => {
 
   if (!isRecovery) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <main className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center">
           <Shield className="h-8 w-8 text-destructive mx-auto mb-4" />
           <p className="text-muted-foreground">Link inválido ou expirado.</p>
         </div>
-      </div>
+      </main>
     );
   }
 
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <Seo title='Redefinir Senha | Carraco' description='Redefina a senha da sua conta Carraco com segurança em poucos passos.' path="/reset-password" />
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
@@ -69,8 +70,9 @@ const ResetPassword = () => {
           </button>
         </form>
       </div>
-    </div>
+    </main>
   );
+
 };
 
 export default ResetPassword;
