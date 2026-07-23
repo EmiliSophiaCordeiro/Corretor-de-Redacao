@@ -1,7 +1,7 @@
 import Seo from "@/components/Seo";
 
 const Cookies = () => (
-  <div className="container max-w-3xl mx-auto px-4 py-10">
+  <main className="container max-w-3xl mx-auto px-4 py-10">
     <Seo title="Política de Cookies | Carraco" description="Como o Carraco utiliza cookies e armazenamento local no seu navegador." path="/cookies" />
     <h1 className="text-3xl font-display font-bold mb-2">Política de Cookies</h1>
     <p className="text-sm text-muted-foreground mb-6">Última atualização: 19 de julho de 2026</p>
