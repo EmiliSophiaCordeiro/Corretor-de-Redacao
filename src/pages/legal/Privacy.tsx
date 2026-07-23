@@ -2,7 +2,8 @@ import Seo from "@/components/Seo";
 import { Link } from "react-router-dom";
 
 const Privacy = () => (
-  <div className="container max-w-3xl mx-auto px-4 py-10 prose prose-invert dark:prose-invert">
+  <main className="container max-w-3xl mx-auto px-4 py-10 prose prose-invert dark:prose-invert">
+
     <Seo title="Política de Privacidade | Carraco" description="Como o Carraco coleta, usa e protege seus dados pessoais em conformidade com a LGPD." path="/privacy" />
     <h1 className="text-3xl font-display font-bold mb-2">Política de Privacidade</h1>
     <p className="text-sm text-muted-foreground mb-6">Última atualização: 19 de julho de 2026</p>
@@ -60,7 +61,7 @@ const Privacy = () => (
 
       <p className="text-xs text-muted-foreground pt-6">Ver também: <Link to="/terms" className="underline">Termos de Uso</Link> · <Link to="/cookies" className="underline">Política de Cookies</Link></p>
     </section>
-  </div>
+  </main>
 );
 
 export default Privacy;

@@ -2,7 +2,7 @@ import Seo from "@/components/Seo";
 import { Link } from "react-router-dom";
 
 const Terms = () => (
-  <div className="container max-w-3xl mx-auto px-4 py-10">
+  <main className="container max-w-3xl mx-auto px-4 py-10">
     <Seo title="Termos de Uso | Carraco" description="Regras de uso da plataforma Carraco para correção e prática de redação." path="/terms" />
     <h1 className="text-3xl font-display font-bold mb-2">Termos de Uso</h1>
     <p className="text-sm text-muted-foreground mb-6">Última atualização: 19 de julho de 2026</p>
@@ -44,7 +44,7 @@ const Terms = () => (
 
       <p className="text-xs text-muted-foreground pt-6">Contato: <a className="text-primary underline" href="mailto:contato@carraco.app">contato@carraco.app</a></p>
     </section>
-  </div>
+  </main>
 );
 
 export default Terms;
