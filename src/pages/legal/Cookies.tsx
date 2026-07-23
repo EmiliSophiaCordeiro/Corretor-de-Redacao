@@ -23,7 +23,7 @@ const Cookies = () => (
       <h2 className="text-xl font-semibold mt-6">3. Contato</h2>
       <p>Dúvidas: <a className="text-primary underline" href="mailto:privacidade@carraco.app">privacidade@carraco.app</a></p>
     </section>
-  </div>
+  </main>
 );
 
 export default Cookies;
