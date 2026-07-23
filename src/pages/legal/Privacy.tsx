@@ -61,7 +61,7 @@ const Privacy = () => (
 
       <p className="text-xs text-muted-foreground pt-6">Ver também: <Link to="/terms" className="underline">Termos de Uso</Link> · <Link to="/cookies" className="underline">Política de Cookies</Link></p>
     </section>
-  </div>
+  </main>
 );
 
 export default Privacy;
