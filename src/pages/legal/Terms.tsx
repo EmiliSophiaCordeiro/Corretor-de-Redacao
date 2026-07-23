@@ -44,7 +44,7 @@ const Terms = () => (
 
       <p className="text-xs text-muted-foreground pt-6">Contato: <a className="text-primary underline" href="mailto:contato@carraco.app">contato@carraco.app</a></p>
     </section>
-  </div>
+  </main>
 );
 
 export default Terms;
