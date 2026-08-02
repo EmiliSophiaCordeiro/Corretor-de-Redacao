@@ -21,7 +21,7 @@ const Mascot = ({ size = 120, hat, glasses, mood = "happy", className = "", prev
 
   return (
     <div className={`relative inline-block ${className}`} style={{ width: size, height: size }}>
-      <svg viewBox="0 0 120 120" width={size} height={size}>
+      <svg viewBox="0 0 120 120" width={size} height={size} role="img" aria-label="Carraco, a coruja mascote da plataforma">
         <defs>
           <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="hsl(234 89% 78%)" />
