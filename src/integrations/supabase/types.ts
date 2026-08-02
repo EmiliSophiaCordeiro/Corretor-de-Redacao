@@ -476,6 +476,33 @@ export type Database = {
           },
         ]
       }
+      user_feedback: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+          page_path: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          page_path?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          page_path?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_inventory: {
         Row: {
           acquired_at: string
