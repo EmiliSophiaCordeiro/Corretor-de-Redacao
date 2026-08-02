@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
 import { useAchievementNotifier } from "@/hooks/useAchievementNotifier";
 import OnboardingTour from "./OnboardingTour";
+import FeedbackButton from "./FeedbackButton";
 import { Flame, Zap, Coins } from "lucide-react";
 
 const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | string; label: string; color: string }) => (
@@ -22,8 +23,9 @@ const AppLayout = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
+      <div className="min-h-dvh flex flex-col items-center justify-center gap-3 bg-background" role="status" aria-live="polite">
+        <div className="h-3 w-3 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+        <p className="font-mono-score text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Carregando sua conta…</p>
       </div>
     );
   }
@@ -31,12 +33,18 @@ const AppLayout = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-dvh flex w-full bg-background">
+        <a
+          href="#conteudo-principal"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+        >
+          Pular para o conteúdo
+        </a>
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-background/80 backdrop-blur-xl px-4">
-            <SidebarTrigger />
-            <div className="flex items-center gap-2">
+          <header className="h-14 sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-background/80 backdrop-blur-xl px-3 sm:px-4">
+            <SidebarTrigger aria-label="Abrir ou fechar menu de navegação" />
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
               {stats && (
                 <>
                   <Stat icon={Flame} value={stats.current_streak} label="streak" color="text-orange-500" />
@@ -46,10 +54,11 @@ const AppLayout = () => {
               )}
             </div>
           </header>
-          <main className="flex-1 overflow-auto">
+          <main id="conteudo-principal" tabIndex={-1} className="flex-1 overflow-auto focus:outline-none">
             <Outlet />
           </main>
           <OnboardingTour />
+          <FeedbackButton />
         </div>
       </div>
     </SidebarProvider>

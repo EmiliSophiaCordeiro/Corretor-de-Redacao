@@ -29,6 +29,13 @@ export const OnboardingTour = () => {
       });
   }, [user?.id]);
 
+  // Permite rever o tutorial a partir da Central de Ajuda / Configurações
+  useEffect(() => {
+    const restart = () => { setStep(0); setOpen(true); };
+    window.addEventListener("carraco:restart-tour", restart);
+    return () => window.removeEventListener("carraco:restart-tour", restart);
+  }, []);
+
   const finish = async () => {
     setOpen(false);
     if (user) {

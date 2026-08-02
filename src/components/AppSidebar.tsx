@@ -27,10 +27,15 @@ import {
   LogOut,
   Moon,
   Sun,
+  LifeBuoy,
 } from "lucide-react";
 import CarracoLogo from "./CarracoLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const main = [
   { title: "Início", url: "/", icon: Home },
@@ -53,6 +58,7 @@ const social = [
 const account = [
   { title: "Perfil", url: "/profile", icon: User },
   { title: "Configurações", url: "/settings", icon: Settings },
+  { title: "Ajuda", url: "/help", icon: LifeBuoy },
 ];
 
 export function AppSidebar() {
@@ -95,7 +101,7 @@ export function AppSidebar() {
         <CarracoLogo withText={!collapsed} size={collapsed ? 32 : 36} />
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-2" role="navigation" aria-label="Navegação principal">
         {renderGroup("Principal", main)}
         {renderGroup("Progresso", progress)}
         {renderGroup("Social", social)}
@@ -105,18 +111,35 @@ export function AppSidebar() {
       <SidebarFooter className="p-3 gap-2">
         <button
           onClick={toggle}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+          aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === "dark" ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
           {!collapsed && <span>{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>}
         </button>
-        <button
-          onClick={signOut}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Sair</span>}
-        </button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button
+              aria-label="Sair da conta"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              {!collapsed && <span>Sair</span>}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Sair da sua conta?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Você precisará entrar novamente para continuar escrevendo. Rascunhos não enviados podem ser perdidos.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Continuar escrevendo</AlertDialogCancel>
+              <AlertDialogAction onClick={() => signOut()}>Sair</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarFooter>
     </Sidebar>
   );
