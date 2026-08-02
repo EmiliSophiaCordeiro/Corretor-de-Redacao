@@ -16,12 +16,13 @@ interface Row {
 const Leaderboard = () => {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const { data } = await (supabase.rpc as any)("get_leaderboard", { _limit: 50 });
-      if (!data) return;
-      setRows(data as Row[]);
+      setRows((data as Row[]) || []);
+      setLoading(false);
     })();
   }, []);
 
@@ -29,8 +30,8 @@ const Leaderboard = () => {
     <div className="container max-w-4xl mx-auto px-4 py-6">
       <Seo title='Ranking | Carraco' description='Veja o ranking dos melhores redatores do Carraco por XP, nível e nota máxima ENEM.' path="/leaderboard" />
       <div className="flex items-center gap-3 mb-6">
-        <div className="h-12 w-12 rounded-2xl gradient-primary flex items-center justify-center glow">
-          <Trophy className="h-6 w-6 text-primary-foreground" />
+        <div className="h-12 w-12 rounded-2xl gradient-primary flex items-center justify-center glow shrink-0">
+          <Trophy className="h-6 w-6 text-primary-foreground" aria-hidden="true" />
         </div>
         <div>
           <h1 className="text-2xl font-display font-bold">Ranking Global</h1>
@@ -38,10 +39,19 @@ const Leaderboard = () => {
         </div>
       </div>
 
+      {loading ? (
+        <CardsSkeleton count={5} className="grid gap-2" />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          icon={Trophy}
+          title="O ranking ainda está vazio"
+          description="Envie uma redação para ganhar XP e ser o primeiro a aparecer no pódio."
+          actionLabel="Escrever redação"
+          actionTo="/studio"
+        />
+      ) : (
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
-        {rows.length === 0 && (
-          <p className="p-6 text-sm text-muted-foreground">Nenhum dado ainda.</p>
-        )}
+
         {rows.map((row, i) => {
           const isMe = row.user_id === user?.id;
           const rankColor = i === 0 ? "text-amber-500" : i === 1 ? "text-slate-400" : i === 2 ? "text-orange-600" : "text-muted-foreground";
