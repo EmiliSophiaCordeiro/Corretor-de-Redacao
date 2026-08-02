@@ -137,8 +137,14 @@ const Community = () => {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 rounded-2xl border border-dashed border-border">
-          <p className="text-muted-foreground mb-4">Nenhuma publicação ainda.</p>
+        <div className="text-center py-14 px-6 rounded-2xl border border-dashed border-border bg-card/40 animate-fade-in">
+          <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-muted flex items-center justify-center">
+            <Users className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
+          </div>
+          <h2 className="font-display font-semibold text-base mb-1">Nada por aqui ainda</h2>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
+            Compartilhe uma dúvida, um trecho da sua redação ou uma dica que funcionou para você.
+          </p>
           <Button onClick={() => setComposerOpen(true)} variant="outline">Seja o primeiro a postar</Button>
         </div>
       ) : (
