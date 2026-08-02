@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Target, Zap, Coins } from "lucide-react";
 import Seo from "@/components/Seo";
+import EmptyState from "@/components/EmptyState";
+import { CardsSkeleton } from "@/components/LoadingState";
 
 interface Challenge {
   id: string;
@@ -52,6 +54,17 @@ const Challenges = () => {
         </div>
       </div>
 
+      {loading ? (
+        <CardsSkeleton count={3} className="grid gap-3" />
+      ) : challenges.length === 0 ? (
+        <EmptyState
+          icon={Target}
+          title="Nenhum desafio ativo agora"
+          description="Novos desafios entram no ar todos os dias. Enquanto isso, treine no Estúdio e mantenha sua ofensiva."
+          actionLabel="Ir para o Estúdio"
+          actionTo="/studio"
+        />
+      ) : (
       <div className="grid gap-3">
         {challenges.map((c) => {
           const p = progress[c.id];
@@ -60,19 +73,26 @@ const Challenges = () => {
             <div key={c.id} className="rounded-2xl border border-border bg-card p-5 hover:shadow-card transition-shadow">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
-                  <h3 className="font-display font-semibold">{c.title}</h3>
+                  <h2 className="font-display font-semibold">{c.title}</h2>
                   <p className="text-sm text-muted-foreground">{c.description}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="flex items-center gap-1 text-primary font-mono-score text-sm font-bold">
-                    <Zap className="h-3.5 w-3.5" /> +{c.xp_reward}
+                    <Zap className="h-3.5 w-3.5" aria-hidden="true" /> +{c.xp_reward}
                   </div>
                   <div className="flex items-center gap-1 text-accent font-mono-score text-xs">
-                    <Coins className="h-3 w-3" /> +{c.points_reward}
+                    <Coins className="h-3 w-3" aria-hidden="true" /> +{c.points_reward}
                   </div>
                 </div>
               </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-2 bg-muted rounded-full overflow-hidden"
+                role="progressbar"
+                aria-valuenow={Math.round(pct)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Progresso do desafio ${c.title}`}
+              >
                 <div
                   className={`h-full transition-all duration-700 ${p?.completed ? "bg-success" : "gradient-primary"}`}
                   style={{ width: `${pct}%` }}
@@ -85,6 +105,7 @@ const Challenges = () => {
           );
         })}
       </div>
+      )}
     </div>
   );
 };
