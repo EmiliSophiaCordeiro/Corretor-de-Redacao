@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
 import { useAchievementNotifier } from "@/hooks/useAchievementNotifier";
 import OnboardingTour from "./OnboardingTour";
+import FeedbackButton from "./FeedbackButton";
 import { Flame, Zap, Coins } from "lucide-react";
 
 const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | string; label: string; color: string }) => (

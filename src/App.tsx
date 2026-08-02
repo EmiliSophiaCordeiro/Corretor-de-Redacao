@@ -18,12 +18,14 @@ import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import Pricing from "./pages/Pricing";
 import SettingsPage from "./pages/SettingsPage";
+import Help from "./pages/Help";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Privacy from "./pages/legal/Privacy";
 import Terms from "./pages/legal/Terms";
 import CookiesPolicy from "./pages/legal/Cookies";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
