@@ -27,6 +27,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  LifeBuoy,
 } from "lucide-react";
 import CarracoLogo from "./CarracoLogo";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,6 +54,7 @@ const social = [
 const account = [
   { title: "Perfil", url: "/profile", icon: User },
   { title: "Configurações", url: "/settings", icon: Settings },
+  { title: "Ajuda", url: "/help", icon: LifeBuoy },
 ];
 
 export function AppSidebar() {
