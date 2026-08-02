@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Trophy, Flame, Crown, Medal } from "lucide-react";
 import Seo from "@/components/Seo";
+import EmptyState from "@/components/EmptyState";
+import { CardsSkeleton } from "@/components/LoadingState";
 
 interface Row {
   user_id: string;
@@ -83,6 +85,7 @@ const Leaderboard = () => {
           );
         })}
       </div>
+      )}
     </div>
   );
 };
