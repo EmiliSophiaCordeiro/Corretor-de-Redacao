@@ -18,12 +18,14 @@ interface Challenge {
 const Challenges = () => {
   const { user } = useAuth();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<Record<string, { progress: number; completed: boolean }>>({});
 
   useEffect(() => {
     (async () => {
       const { data: ch } = await supabase.from("daily_challenges").select("*").eq("is_active", true);
       setChallenges(ch || []);
+      setLoading(false);
       if (!user) return;
       const today = new Date().toISOString().slice(0, 10);
       const { data: udc } = await supabase
