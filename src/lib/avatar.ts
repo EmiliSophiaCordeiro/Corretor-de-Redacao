@@ -61,3 +61,14 @@ export async function uploadAvatarFile(userId: string, file: File): Promise<stri
   if (error) throw error;
   return path;
 }
+
+/** Remove every stored avatar file for the user and clear the cached signed URLs. */
+export async function removeAvatarFiles(userId: string): Promise<void> {
+  const { data: list } = await supabase.storage.from("avatars").list(userId);
+  if (list?.length) {
+    const paths = list.map((f) => `${userId}/${f.name}`);
+    await supabase.storage.from("avatars").remove(paths);
+    paths.forEach((p) => cache.delete(p));
+  }
+}
+
