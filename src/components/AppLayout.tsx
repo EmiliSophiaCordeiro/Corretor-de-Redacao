@@ -21,7 +21,9 @@ const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | 
 const AppLayout = () => {
   const { user, loading } = useAuth();
   const { stats } = useUserStats();
+  const avatarUrl = useMyAvatar();
   useAchievementNotifier();
+
 
   if (loading) {
     return (
