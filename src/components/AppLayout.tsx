@@ -3,6 +3,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
+import { useMyAvatar } from "@/hooks/useMyAvatar";
+import { Link } from "react-router-dom";
 import { useAchievementNotifier } from "@/hooks/useAchievementNotifier";
 import OnboardingTour from "./OnboardingTour";
 import FeedbackButton from "./FeedbackButton";
