@@ -6,6 +6,7 @@ import Mascot from "@/components/Mascot";
 import { toast } from "sonner";
 import { Camera, Trash2 } from "lucide-react";
 import { uploadAvatarFile, removeAvatarFiles, useResolvedAvatar } from "@/lib/avatar";
+import { notifyAvatarChanged } from "@/hooks/useMyAvatar";
 import Seo from "@/components/Seo";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -48,6 +49,7 @@ const Profile = () => {
       const path = await uploadAvatarFile(user.id, file);
       await supabase.from("profiles").update({ avatar_url: path }).eq("user_id", user.id);
       setAvatarPath(path);
+      notifyAvatarChanged();
       toast.success("Foto atualizada");
     } catch (e: any) {
       toast.error(e?.message || "Falha ao enviar foto");
@@ -61,6 +63,7 @@ const Profile = () => {
       await removeAvatarFiles(user.id);
       await supabase.from("profiles").update({ avatar_url: null }).eq("user_id", user.id);
       setAvatarPath(null);
+      notifyAvatarChanged();
       toast.success("Foto de perfil removida");
     } catch (e: any) {
       toast.error(e?.message || "Falha ao remover foto");

@@ -3,6 +3,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
+import { useMyAvatar } from "@/hooks/useMyAvatar";
+import { Link } from "react-router-dom";
 import { useAchievementNotifier } from "@/hooks/useAchievementNotifier";
 import OnboardingTour from "./OnboardingTour";
 import FeedbackButton from "./FeedbackButton";
@@ -19,7 +21,9 @@ const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | 
 const AppLayout = () => {
   const { user, loading } = useAuth();
   const { stats } = useUserStats();
+  const avatarUrl = useMyAvatar();
   useAchievementNotifier();
+
 
   if (loading) {
     return (
@@ -52,7 +56,17 @@ const AppLayout = () => {
                   <Stat icon={Coins} value={stats.points} label="pontos" color="text-accent" />
                 </>
               )}
+              <Link to="/profile" aria-label="Ir para o perfil" className="shrink-0">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Sua foto de perfil" className="h-8 w-8 rounded-full object-cover ring-2 ring-primary/40" />
+                ) : (
+                  <span className="h-8 w-8 rounded-full gradient-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    {(user?.email || "?").charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </Link>
             </div>
+
           </header>
           <main id="conteudo-principal" tabIndex={-1} className="flex-1 overflow-auto focus:outline-none">
             <Outlet />
