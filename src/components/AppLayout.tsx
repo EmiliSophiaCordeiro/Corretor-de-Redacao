@@ -56,7 +56,17 @@ const AppLayout = () => {
                   <Stat icon={Coins} value={stats.points} label="pontos" color="text-accent" />
                 </>
               )}
+              <Link to="/profile" aria-label="Ir para o perfil" className="shrink-0">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Sua foto de perfil" className="h-8 w-8 rounded-full object-cover ring-2 ring-primary/40" />
+                ) : (
+                  <span className="h-8 w-8 rounded-full gradient-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    {(user?.email || "?").charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </Link>
             </div>
+
           </header>
           <main id="conteudo-principal" tabIndex={-1} className="flex-1 overflow-auto focus:outline-none">
             <Outlet />
