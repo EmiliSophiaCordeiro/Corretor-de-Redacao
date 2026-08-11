@@ -4,9 +4,13 @@ import { useUserStats } from "@/hooks/useUserStats";
 import { supabase } from "@/integrations/supabase/client";
 import Mascot from "@/components/Mascot";
 import { toast } from "sonner";
-import { Camera } from "lucide-react";
-import { uploadAvatarFile, useResolvedAvatar } from "@/lib/avatar";
+import { Camera, Trash2 } from "lucide-react";
+import { uploadAvatarFile, removeAvatarFiles, useResolvedAvatar } from "@/lib/avatar";
 import Seo from "@/components/Seo";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -16,6 +20,8 @@ const Profile = () => {
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const avatarUrl = useResolvedAvatar(avatarPath);
   const [saving, setSaving] = useState(false);
+  const [removing, setRemoving] = useState(false);
+
 
   useEffect(() => {
     if (!user) return;
@@ -48,6 +54,21 @@ const Profile = () => {
     }
   };
 
+  const removePhoto = async () => {
+    if (!user) return;
+    setRemoving(true);
+    try {
+      await removeAvatarFiles(user.id);
+      await supabase.from("profiles").update({ avatar_url: null }).eq("user_id", user.id);
+      setAvatarPath(null);
+      toast.success("Foto de perfil removida");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao remover foto");
+    } finally {
+      setRemoving(false);
+    }
+  };
+
   return (
     <div className="container max-w-3xl mx-auto px-4 py-6">
       <Seo title='Meu Perfil | Carraco' description='Acompanhe seu nível, XP, ofensiva, conquistas e evolução como redator no seu perfil Carraco.' path="/profile" />
@@ -58,9 +79,38 @@ const Profile = () => {
             : <Mascot size={120} hat="graduation" glasses="round" />}
           <label className="absolute bottom-0 right-0 h-9 w-9 rounded-full gradient-primary text-primary-foreground flex items-center justify-center cursor-pointer glow">
             <Camera className="h-4 w-4" />
+            <span className="sr-only">Trocar foto de perfil</span>
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
           </label>
+          {avatarPath && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Excluir foto de perfil"
+                  className="absolute bottom-0 left-0 h-9 w-9 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir foto de perfil?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Sua foto será apagada e o mascote voltará a ser exibido. Você pode enviar outra depois.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={removePhoto} disabled={removing}>
+                    {removing ? "Excluindo..." : "Excluir foto"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
+
         <div className="flex-1 min-w-0">
           <p className="font-mono-score text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-1">Perfil</p>
           <h1 className="text-2xl font-display font-bold">{displayName || "Estudante Carraco"}</h1>
