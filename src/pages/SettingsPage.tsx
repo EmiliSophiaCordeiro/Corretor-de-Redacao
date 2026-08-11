@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { uploadAvatarFile, removeAvatarFiles, useResolvedAvatar } from "@/lib/avatar";
+import { notifyAvatarChanged } from "@/hooks/useMyAvatar";
 import Seo from "@/components/Seo";
 
 type TabId = "conta" | "aparencia" | "notificacoes" | "privacidade" | "acessibilidade" | "dados" | "suporte";
@@ -97,6 +98,7 @@ const SettingsPage = () => {
       const path = await uploadAvatarFile(user.id, file);
       await supabase.from("profiles").update({ avatar_url: path }).eq("user_id", user.id);
       setAvatarPath(path);
+      notifyAvatarChanged();
       toast.success("Foto atualizada");
     } catch (e: any) {
       toast.error(e?.message || "Falha ao enviar foto");
@@ -110,6 +112,7 @@ const SettingsPage = () => {
       await removeAvatarFiles(user.id);
       await supabase.from("profiles").update({ avatar_url: null }).eq("user_id", user.id);
       setAvatarPath(null);
+      notifyAvatarChanged();
       toast.success("Foto de perfil removida");
     } catch (e: any) {
       toast.error(e?.message || "Falha ao remover foto");
