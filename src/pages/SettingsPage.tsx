@@ -184,10 +184,18 @@ const SettingsPage = () => {
                   : <div className="h-20 w-20 rounded-full gradient-primary text-primary-foreground flex items-center justify-center text-2xl font-bold">
                       {(displayName||"?").charAt(0).toUpperCase()}
                     </div>}
-                <label className="cursor-pointer">
-                  <span className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-sm">Trocar foto</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
-                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="cursor-pointer">
+                    <span className="inline-block px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-sm">Trocar foto</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
+                  </label>
+                  {avatarPath && (
+                    <Button variant="outline" size="sm" onClick={removeAvatar} className="text-destructive hover:text-destructive">
+                      Excluir foto
+                    </Button>
+                  )}
+                </div>
+
               </div>
               <Field label="Nome de exibição" htmlFor="displayName">
                 <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
