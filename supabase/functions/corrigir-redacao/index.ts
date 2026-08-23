@@ -50,16 +50,16 @@ const BASE_ENEM_PROMPT = `Você é um corretor experiente do ENEM, treinado segu
 const OUTPUT_FORMAT = `
 ## Formato de Saída
 
-Você DEVE responder APENAS com um objeto JSON válido, sem markdown, sem texto antes ou depois. Use exatamente esta estrutura:
+Você DEVE responder APENAS com um objeto JSON válido, sem markdown, sem crases, sem texto antes ou depois. Use exatamente esta estrutura:
 
 {
   "total_score": <número 0-1000, múltiplo de 20>,
   "competencies": {
-    "c1": {"score": <0-200, múltiplo de 40>, "justification": "<análise técnica fria>"},
-    "c2": {"score": <0-200, múltiplo de 40>, "justification": "<análise técnica fria>"},
-    "c3": {"score": <0-200, múltiplo de 40>, "justification": "<análise técnica fria>"},
-    "c4": {"score": <0-200, múltiplo de 40>, "justification": "<análise técnica fria>"},
-    "c5": {"score": <0-200, múltiplo de 40>, "justification": "<análise técnica fria>"}
+    "c1": {"score": <0-200, múltiplo de 40>, "justification": "<justificativa técnica e específica, citando o texto>"},
+    "c2": {"score": <0-200, múltiplo de 40>, "justification": "<justificativa técnica e específica>"},
+    "c3": {"score": <0-200, múltiplo de 40>, "justification": "<justificativa técnica e específica>"},
+    "c4": {"score": <0-200, múltiplo de 40>, "justification": "<justificativa técnica e específica>"},
+    "c5": {"score": <0-200, múltiplo de 40>, "justification": "<justificativa técnica e específica>"}
   },
   "specific_errors": [
     {
@@ -70,6 +70,8 @@ Você DEVE responder APENAS com um objeto JSON válido, sem markdown, sem texto 
       "level_impact": "<impacto proporcional na competência correspondente>"
     }
   ],
+  "strengths": ["<ponto positivo concreto observado no texto>", "..."],
+  "suggestions": ["<sugestão prática e acionável de melhoria>", "..."],
   "c5_checklist": {
     "agent": true/false,
     "action": true/false,
@@ -80,7 +82,146 @@ Você DEVE responder APENAS com um objeto JSON válido, sem markdown, sem texto 
   "overall_verdict": "<síntese equilibrada: comece pelos pontos fortes da redação, depois aponte o que limitou a nota e o que o aluno pode melhorar para subir de faixa>"
 }
 
-O total_score DEVE ser a soma exata dos 5 scores de competências. Cada score de competência deve ser múltiplo de 40 (0, 40, 80, 120, 160, 200). Liste apenas os erros que realmente impactam a nota — não invente problemas para preencher a lista. Seja justo e proporcional.`;
+Regras obrigatórias:
+- "strengths": no mínimo 2 e no máximo 6 itens, sempre baseados no texto real. Nunca invente.
+- "suggestions": no mínimo 3 e no máximo 6 itens, práticos e ligados aos problemas apontados.
+- "overall_verdict": no mínimo 3 frases.
+- Nunca deixe campos vazios, nulos ou com texto genérico.
+- O total_score DEVE ser a soma exata dos 5 scores de competências. Cada score de competência deve ser múltiplo de 40 (0, 40, 80, 120, 160, 200).
+- Liste apenas os erros que realmente existem no texto — não invente problemas para preencher a lista.`;
+
+type Competency = { score: number; justification: string };
+
+const clampScore = (value: unknown): number => {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(200, Math.max(0, Math.round(n / 40) * 40));
+};
+
+const asText = (value: unknown, fallback: string): string => {
+  if (typeof value !== "string") return fallback;
+  const cleaned = value.replace(/```+/g, "").trim();
+  return cleaned.length > 0 ? cleaned : fallback;
+};
+
+const asStringList = (value: unknown, max: number): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((v) => (typeof v === "string" ? v.replace(/```+/g, "").trim() : ""))
+    .filter((v) => v.length > 0)
+    .slice(0, max);
+};
+
+/** Extracts the first balanced JSON object from an arbitrary model answer. */
+const extractJsonObject = (raw: string): unknown => {
+  let text = raw.trim();
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) text = fence[1].trim();
+  const start = text.indexOf("{");
+  if (start === -1) throw new Error("no json object");
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) return JSON.parse(text.slice(start, i + 1));
+    }
+  }
+  throw new Error("unbalanced json object");
+};
+
+/** Guarantees a complete, renderable result no matter what the model returned. */
+const normalizeResult = (parsed: any) => {
+  const comps: Record<string, Competency> = {};
+  const labels: Record<string, string> = {
+    c1: "Domínio da norma culta",
+    c2: "Compreensão do tema e repertório",
+    c3: "Projeto de texto e argumentação",
+    c4: "Mecanismos de coesão",
+    c5: "Proposta de intervenção",
+  };
+  for (const key of ["c1", "c2", "c3", "c4", "c5"]) {
+    const src = parsed?.competencies?.[key] ?? {};
+    comps[key] = {
+      score: clampScore(src.score),
+      justification: asText(
+        src.justification,
+        `Não foi possível detalhar a análise de ${labels[key]} nesta correção. Reenvie a redação para uma avaliação completa desta competência.`,
+      ),
+    };
+  }
+
+  const sum = Object.values(comps).reduce((acc, c) => acc + c.score, 0);
+
+  const errors = Array.isArray(parsed?.specific_errors)
+    ? parsed.specific_errors
+        .filter((e: any) => e && typeof e === "object")
+        .map((e: any) => ({
+          type: ["Gramatical", "Estrutural", "Argumentativo"].includes(e.type) ? e.type : "Estrutural",
+          location: asText(e.location, "Texto"),
+          technical_description: asText(e.technical_description, "Problema identificado no texto."),
+          inep_rule: asText(e.inep_rule, "Critério INEP correspondente à competência afetada."),
+          level_impact: asText(e.level_impact, "Impacto proporcional na competência correspondente."),
+        }))
+        .slice(0, 30)
+    : [];
+
+  let strengths = asStringList(parsed?.strengths, 6);
+  if (strengths.length === 0) {
+    strengths = [
+      sum >= 600
+        ? "O texto mantém estrutura dissertativo-argumentativa reconhecível e desenvolve o tema proposto."
+        : "O texto foi entregue dentro da proposta dissertativo-argumentativa e apresenta base para evolução.",
+    ];
+  }
+
+  let suggestions = asStringList(parsed?.suggestions, 6);
+  if (suggestions.length === 0) {
+    suggestions = errors.slice(0, 3).map((e: any) => `Revise: ${e.technical_description}`);
+  }
+  if (suggestions.length === 0) {
+    suggestions = [
+      "Releia o texto verificando concordância, pontuação e regência.",
+      "Reforce o repertório sociocultural com dados, leis ou obras articulados ao argumento.",
+      "Garanta que a proposta de intervenção traga agente, ação, meio, efeito e detalhamento.",
+    ];
+  }
+
+  const checklistSrc = parsed?.c5_checklist ?? {};
+  const c5_checklist = {
+    agent: checklistSrc.agent === true,
+    action: checklistSrc.action === true,
+    means_mode: checklistSrc.means_mode === true,
+    effect: checklistSrc.effect === true,
+    detail: checklistSrc.detail === true,
+  };
+
+  const overall_verdict = asText(
+    parsed?.overall_verdict ?? parsed?.conclusion,
+    `A redação alcançou ${sum} pontos. Considere os pontos positivos listados como base e trabalhe as sugestões apontadas para subir de faixa na próxima correção.`,
+  );
+
+  return {
+    total_score: Math.min(1000, Math.max(0, sum)),
+    competencies: comps,
+    specific_errors: errors,
+    strengths,
+    suggestions,
+    c5_checklist,
+    overall_verdict,
+  };
+};
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
