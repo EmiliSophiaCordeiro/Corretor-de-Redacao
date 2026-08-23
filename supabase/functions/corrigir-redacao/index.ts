@@ -313,61 +313,119 @@ serve(async (req) => {
 
     systemPrompt += OUTPUT_FORMAT;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Lovable-API-Key": LOVABLE_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `TEMA DA REDAÇÃO: "${theme}"\nMODO DE CORREÇÃO: ${mode_name || "ENEM Padrão"}\n\nCorrija a seguinte redação com rigor máximo. Verifique se o texto aborda o tema proposto — se houver fuga total do tema, a nota deve ser ZERO em todas as competências. Se houver tangenciamento (abordagem parcial), penalize severamente na C2.\n\n${essay}` },
-        ],
-      }),
-    });
+    const startedAt = Date.now();
+    const userMessage = `TEMA DA REDAÇÃO: "${theme}"\nMODO DE CORREÇÃO: ${mode_name || "ENEM Padrão"}\n\nCorrija a seguinte redação. Verifique se o texto aborda o tema proposto — se houver fuga total do tema, a nota deve ser ZERO em todas as competências. Se houver tangenciamento (abordagem parcial), penalize na C2. Responda somente com o objeto JSON especificado.\n\n${essay}`;
+
+    const callModel = async (extraInstruction?: string) => {
+      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Lovable-API-Key": LOVABLE_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-pro",
+          temperature: 0.2,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: extraInstruction ? `${userMessage}\n\n${extraInstruction}` : userMessage,
+            },
+          ],
+        }),
+      });
+      return res;
+    };
+
+    let response = await callModel();
 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Muitas requisições. Tente novamente em alguns segundos." }),
+          JSON.stringify({ error: "Muitas requisições. Aguarde alguns segundos e tente novamente." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }),
+          JSON.stringify({ error: "Créditos de IA insuficientes. Adicione créditos para continuar corrigindo." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 403) {
+        return new Response(
+          JSON.stringify({ error: "A correção por IA está indisponível para esta conta no momento." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       const text = await response.text();
       console.error("AI gateway error:", response.status, text);
       return new Response(
-        JSON.stringify({ error: "Erro ao processar a correção." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Não conseguimos concluir a correção agora. Tente novamente em instantes." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const readContent = async (res: Response): Promise<string> => {
+      const data = await res.json();
+      const content = data?.choices?.[0]?.message?.content;
+      return typeof content === "string" ? content : "";
+    };
 
-    if (!content) {
-      throw new Error("No content in AI response");
+    let content = await readContent(response);
+    let parsed: unknown = null;
+
+    const tryParse = (raw: string) => {
+      if (!raw.trim()) return null;
+      try {
+        return extractJsonObject(raw);
+      } catch (err) {
+        console.error("corrigir-redacao parse failure", String(err), raw.slice(0, 400));
+        return null;
+      }
+    };
+
+    parsed = tryParse(content);
+
+    // One deterministic retry when the model answers empty or unparseable.
+    if (!parsed) {
+      const retry = await callModel(
+        "Sua resposta anterior não era um JSON válido. Responda AGORA apenas com o objeto JSON no formato exigido, sem markdown e sem qualquer texto adicional.",
+      );
+      if (retry.ok) {
+        content = await readContent(retry);
+        parsed = tryParse(content);
+      }
     }
 
-    console.log("corrigir-redacao ai response", JSON.stringify({ content_chars: content.length, preview: content.slice(0, 240) }));
-
-    let jsonStr = content.trim();
-    if (jsonStr.startsWith("```")) {
-      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+    if (!parsed || typeof parsed !== "object") {
+      return new Response(
+        JSON.stringify({ error: "A análise não pôde ser concluída desta vez. Envie a redação novamente." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const result = JSON.parse(jsonStr);
+    const result = {
+      ...normalizeResult(parsed),
+      analysis_ms: Date.now() - startedAt,
+      analyzed_at: new Date().toISOString(),
+      mode_name: typeof mode_name === "string" && mode_name.trim() ? mode_name : "ENEM Padrão",
+    };
+
+    console.log("corrigir-redacao result", JSON.stringify({
+      total_score: result.total_score,
+      errors: result.specific_errors.length,
+      strengths: result.strengths.length,
+      suggestions: result.suggestions.length,
+      analysis_ms: result.analysis_ms,
+    }));
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (e) {
     console.error("corrigir-redacao error:", e);
     return new Response(
