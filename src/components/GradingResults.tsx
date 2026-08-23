@@ -22,6 +22,15 @@ const getScoreColor = (score: number) => {
 };
 
 const GradingResults = ({ result }: GradingResultsProps) => {
+  const competencies = result?.competencies ?? ({} as GradingResult["competencies"]);
+  const errors = Array.isArray(result?.specific_errors) ? result.specific_errors : [];
+  const strengths = Array.isArray(result?.strengths) ? result.strengths : [];
+  const suggestions = Array.isArray(result?.suggestions) ? result.suggestions : [];
+  const analysisSeconds =
+    typeof result?.analysis_ms === "number" && result.analysis_ms > 0
+      ? (result.analysis_ms / 1000).toFixed(1)
+      : null;
+
   return (
     <div className="space-y-6">
       {/* Total Score Header */}
@@ -33,6 +42,13 @@ const GradingResults = ({ result }: GradingResultsProps) => {
           {result.total_score}
         </div>
         <span className="font-mono-score text-sm text-muted-foreground">/1000</span>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 font-mono-score text-[10px] uppercase tracking-widest text-muted-foreground">
+          {result.mode_name && <span>{result.mode_name}</span>}
+          {analysisSeconds && <span>Análise em {analysisSeconds}s</span>}
+          {result.analyzed_at && (
+            <span>{new Date(result.analyzed_at).toLocaleString("pt-BR")}</span>
+          )}
+        </div>
       </div>
 
       {/* Competency Grid */}
@@ -41,12 +57,12 @@ const GradingResults = ({ result }: GradingResultsProps) => {
           Competências
         </h2>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {(Object.entries(result.competencies) as [string, { score: number; justification: string }][]).map(
+          {(Object.entries(competencies) as [string, { score: number; justification: string }][]).map(
             ([id, data]) => (
               <CompetencyCard
                 key={id}
                 id={id.toUpperCase()}
-                label={competencyLabels[id]}
+                label={competencyLabels[id] ?? id.toUpperCase()}
                 data={data}
               />
             )
@@ -57,6 +73,23 @@ const GradingResults = ({ result }: GradingResultsProps) => {
       {/* C5 Checklist */}
       <C5Checklist checklist={result.c5_checklist} />
 
+      {/* Strengths */}
+      {strengths.length > 0 && (
+        <div className="rounded-lg border border-success/30 bg-success/5 p-5">
+          <h2 className="font-mono-score text-[10px] uppercase tracking-[0.3em] text-success mb-3">
+            Pontos Positivos
+          </h2>
+          <ul className="space-y-2 list-none p-0">
+            {strengths.map((s, i) => (
+              <li key={i} className="flex gap-2 text-sm text-foreground leading-relaxed">
+                <span aria-hidden="true" className="text-success">✔</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Specific Errors */}
       <div>
         <div className="flex items-center gap-2 mb-3">
@@ -64,25 +97,46 @@ const GradingResults = ({ result }: GradingResultsProps) => {
             Erros Específicos
           </h2>
           <span className="font-mono-score text-[10px] rounded-sm bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5">
-            {result.specific_errors.length} encontrados
+            {errors.length} encontrados
           </span>
         </div>
-        <div className="space-y-3">
-          {result.specific_errors.map((error, i) => (
-            <ErrorCard key={i} error={error} index={i} />
-          ))}
-        </div>
+        {errors.length === 0 ? (
+          <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+            Nenhum erro relevante foi apontado nesta correção.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {errors.map((error, i) => (
+              <ErrorCard key={i} error={error} index={i} />
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Suggestions */}
+      {suggestions.length > 0 && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-5">
+          <h2 className="font-mono-score text-[10px] uppercase tracking-[0.3em] text-primary mb-3">
+            Sugestões de Melhoria
+          </h2>
+          <ol className="space-y-2 list-decimal pl-5">
+            {suggestions.map((s, i) => (
+              <li key={i} className="text-sm text-foreground leading-relaxed">{s}</li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {/* Overall Verdict */}
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6">
         <span className="font-mono-score text-[10px] uppercase tracking-[0.3em] text-destructive block mb-3">
-          Veredito Final
+          Conclusão
         </span>
-        <p className="text-sm leading-relaxed text-foreground">{result.overall_verdict}</p>
+        <p className="text-sm leading-relaxed text-foreground whitespace-pre-line">{result.overall_verdict}</p>
       </div>
     </div>
   );
 };
+
 
 export default GradingResults;

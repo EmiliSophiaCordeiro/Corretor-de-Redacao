@@ -29,6 +29,12 @@ export interface GradingResult {
     c5: CompetencyScore;
   };
   specific_errors: SpecificError[];
+  strengths?: string[];
+  suggestions?: string[];
   c5_checklist: C5Checklist;
   overall_verdict: string;
+  analysis_ms?: number;
+  analyzed_at?: string;
+  mode_name?: string;
 }
+

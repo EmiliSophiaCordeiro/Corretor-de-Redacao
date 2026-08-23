@@ -55,7 +55,12 @@ const Studio = () => {
       });
 
       if (error || data?.error) {
-        toast.error(data?.error || "Erro ao corrigir.");
+        toast.error(data?.error || "Não conseguimos corrigir a redação agora. Tente novamente.");
+        return;
+      }
+
+      if (!data || typeof (data as GradingResult).total_score !== "number") {
+        toast.error("A correção voltou incompleta. Envie a redação novamente.");
         return;
       }
 
@@ -68,7 +73,7 @@ const Studio = () => {
       const pointsEarned = 30 + Math.floor(totalScore / 20);
 
       // Persist correction first so record_max_score can validate it
-      await supabase.from("correction_history").insert({
+      const { error: historyError } = await supabase.from("correction_history").insert({
         user_id: user.id,
         theme,
         essay_text: text,
@@ -76,23 +81,33 @@ const Studio = () => {
         result_json: data,
       });
 
-      await supabase.rpc("award_xp", {
-        _user_id: user.id,
-        _xp: xpEarned,
-        _points: pointsEarned,
-      });
+      if (historyError) {
+        console.error("[Correção] Falha ao salvar histórico", historyError);
+        toast.error("A correção foi feita, mas não conseguimos salvá-la no histórico.");
+      }
 
-      await supabase.rpc("record_max_score" as any, { _score: totalScore });
+      try {
+        await supabase.rpc("award_xp", {
+          _user_id: user.id,
+          _xp: xpEarned,
+          _points: pointsEarned,
+        });
 
+        await supabase.rpc("record_max_score" as any, { _score: totalScore });
 
-      // Auto-unlock achievements based on new stats
-      await supabase.rpc("check_and_unlock_achievements" as any, { _user_id: user.id });
+        // Auto-unlock achievements based on new stats
+        await supabase.rpc("check_and_unlock_achievements" as any, { _user_id: user.id });
 
-      await refetch();
+        await refetch();
+      } catch (gamificationError) {
+        console.error("[Correção] Falha na gamificação", gamificationError);
+      }
+
       toast.success(`+${xpEarned} XP · +${pointsEarned} pontos`, {
         icon: "⚡",
         description: `Nota ${totalScore} · sequência mantida!`,
       });
+
     } catch (e) {
       console.error("[Correção] Exceção", e);
       toast.error("Erro inesperado. Tente novamente.");
