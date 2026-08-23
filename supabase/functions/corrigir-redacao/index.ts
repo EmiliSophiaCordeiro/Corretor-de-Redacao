@@ -427,9 +427,11 @@ serve(async (req) => {
     });
 
   } catch (e) {
+    // Never leak internal messages or stack traces to the client.
     console.error("corrigir-redacao error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }),
+      JSON.stringify({ error: "Ocorreu um erro inesperado ao corrigir a redação. Tente novamente." }),
+
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
