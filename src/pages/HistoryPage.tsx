@@ -127,18 +127,39 @@ const HistoryPage = () => {
       )}
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-auto">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-auto">
           <DialogHeader>
             <DialogTitle className="text-left">{selected?.theme}</DialogTitle>
             <DialogDescription className="text-left">
               {selected?.mode_name} · {selected && new Date(selected.created_at).toLocaleString("pt-BR")}
             </DialogDescription>
           </DialogHeader>
-          <pre className="whitespace-pre-wrap font-mono-score text-sm leading-relaxed bg-muted/40 rounded-lg p-4">
-            {selected?.essay_text}
-          </pre>
+
+          <Tabs defaultValue="correcao">
+            <TabsList className="w-full">
+              <TabsTrigger value="correcao" className="flex-1">Correção</TabsTrigger>
+              <TabsTrigger value="redacao" className="flex-1">Redação</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="correcao" className="mt-4">
+              {selected?.result_json && typeof selected.result_json.total_score === "number" ? (
+                <GradingResults result={selected.result_json as GradingResult} />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Esta correção foi salva antes da nova análise detalhada, então só o texto está disponível.
+                </p>
+              )}
+            </TabsContent>
+
+            <TabsContent value="redacao" className="mt-4">
+              <pre className="whitespace-pre-wrap font-mono-score text-sm leading-relaxed bg-muted/40 rounded-lg p-4">
+                {selected?.essay_text}
+              </pre>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
+
 
       <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && setPendingDelete(null)}>
         <AlertDialogContent>
