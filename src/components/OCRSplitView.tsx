@@ -472,8 +472,13 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
         />
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
-            <Camera className="h-7 w-7 text-primary" />
+            {isScanning ? (
+              <div className="h-7 w-7 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+            ) : (
+              <Camera className="h-7 w-7 text-primary" />
+            )}
           </div>
+
           <div>
             <p className="text-sm font-medium text-foreground">Digitalizar ou importar redação</p>
             <p className="text-xs text-muted-foreground mt-1">Foto, PDF ou DOCX — arraste aqui • Imagem até 10MB, documento até 20MB</p>
