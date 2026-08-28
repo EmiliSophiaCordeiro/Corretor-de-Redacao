@@ -2,6 +2,8 @@ import { AlertTriangle, Bug, Camera, FileText, ImageIcon, Upload, X } from "luci
 import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ACCEPTED_UPLOAD, importDocument, isDocxFile, isImageFile, isPdfFile } from "@/lib/documentImport";
+
 
 interface Props {
   onTextExtracted: (text: string) => void;
