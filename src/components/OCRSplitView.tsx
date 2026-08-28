@@ -2,6 +2,8 @@ import { AlertTriangle, Bug, Camera, FileText, ImageIcon, Upload, X } from "luci
 import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ACCEPTED_UPLOAD, importDocument, isDocxFile, isImageFile, isPdfFile } from "@/lib/documentImport";
+
 
 interface Props {
   onTextExtracted: (text: string) => void;
@@ -391,17 +393,56 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
     }
   };
 
+  /** Routes any accepted upload: images go to OCR, PDF/DOCX are imported as text (scanned PDFs fall back to OCR). */
+  const handleAnyFile = async (file: File) => {
+    if (isImageFile(file)) {
+      await handleImageUpload(file);
+      return;
+    }
+    if (!isPdfFile(file) && !isDocxFile(file)) {
+      toast.error("Formato não suportado. Envie imagem, PDF ou DOCX.");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Arquivo muito grande. Máximo 20MB.");
+      return;
+    }
+
+    setIsScanning(true);
+    try {
+      const imported = await importDocument(file);
+      if (imported.kind === "image") {
+        setIsScanning(false);
+        toast.info("PDF digitalizado detectado. Aplicando OCR na primeira página…");
+        await handleImageUpload(imported.file);
+        return;
+      }
+      if (imported.text.trim().length < 50) {
+        toast.error("Não conseguimos extrair texto deste arquivo.");
+        return;
+      }
+      onTextExtracted(imported.text);
+      toast.success(`Texto importado do ${imported.source.toUpperCase()} para a folha digital.`);
+    } catch (err) {
+      console.error("[Import] Falha ao ler documento", err);
+      toast.error("Não foi possível ler este arquivo. Tente outro formato.");
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) handleImageUpload(file);
+    if (file) handleAnyFile(file);
     e.target.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file) handleImageUpload(file);
+    if (file) handleAnyFile(file);
   };
+
 
   const clear = () => {
     setPreviewImage(null);
@@ -425,18 +466,22 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
-          capture="environment"
+          accept={ACCEPTED_UPLOAD}
           onChange={handleFileSelect}
           className="hidden"
         />
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
-            <Camera className="h-7 w-7 text-primary" />
+            {isScanning ? (
+              <div className="h-7 w-7 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+            ) : (
+              <Camera className="h-7 w-7 text-primary" />
+            )}
           </div>
+
           <div>
-            <p className="text-sm font-medium text-foreground">Digitalizar redação manuscrita</p>
-            <p className="text-xs text-muted-foreground mt-1">Tire uma foto ou arraste a imagem aqui • Máximo 10MB</p>
+            <p className="text-sm font-medium text-foreground">Digitalizar ou importar redação</p>
+            <p className="text-xs text-muted-foreground mt-1">Foto, PDF ou DOCX — arraste aqui • Imagem até 10MB, documento até 20MB</p>
           </div>
           <div className="flex items-center gap-3 mt-2">
             <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors">
@@ -445,7 +490,7 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
             </button>
             <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors">
               <Upload className="h-3.5 w-3.5" />
-              Galeria
+              Arquivo
             </button>
           </div>
         </div>
@@ -475,7 +520,7 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
             <Camera className="h-3 w-3" />
             Trocar imagem
           </button>
-          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} className="hidden" />
+          <input ref={fileInputRef} type="file" accept={ACCEPTED_UPLOAD} onChange={handleFileSelect} className="hidden" />
         </div>
 
         <div className="p-4">
