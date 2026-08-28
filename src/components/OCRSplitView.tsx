@@ -393,17 +393,56 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
     }
   };
 
+  /** Routes any accepted upload: images go to OCR, PDF/DOCX are imported as text (scanned PDFs fall back to OCR). */
+  const handleAnyFile = async (file: File) => {
+    if (isImageFile(file)) {
+      await handleImageUpload(file);
+      return;
+    }
+    if (!isPdfFile(file) && !isDocxFile(file)) {
+      toast.error("Formato não suportado. Envie imagem, PDF ou DOCX.");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Arquivo muito grande. Máximo 20MB.");
+      return;
+    }
+
+    setIsScanning(true);
+    try {
+      const imported = await importDocument(file);
+      if (imported.kind === "image") {
+        setIsScanning(false);
+        toast.info("PDF digitalizado detectado. Aplicando OCR na primeira página…");
+        await handleImageUpload(imported.file);
+        return;
+      }
+      if (imported.text.trim().length < 50) {
+        toast.error("Não conseguimos extrair texto deste arquivo.");
+        return;
+      }
+      onTextExtracted(imported.text);
+      toast.success(`Texto importado do ${imported.source.toUpperCase()} para a folha digital.`);
+    } catch (err) {
+      console.error("[Import] Falha ao ler documento", err);
+      toast.error("Não foi possível ler este arquivo. Tente outro formato.");
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) handleImageUpload(file);
+    if (file) handleAnyFile(file);
     e.target.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file) handleImageUpload(file);
+    if (file) handleAnyFile(file);
   };
+
 
   const clear = () => {
     setPreviewImage(null);
