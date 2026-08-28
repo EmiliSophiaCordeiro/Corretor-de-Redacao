@@ -1,0 +1,13 @@
+# Carraco
+
+> Plataforma brasileira de redação com IA: correção no padrão ENEM/INEP, prática diária e gamificação para estudantes.
+
+Carraco transforma a prática de redação em um hábito diário. Escreva suas redações na folha digital ou envie por foto (OCR), e receba correções detalhadas com as 5 competências do ENEM, nota geral, erros identificados, pontos fortes e sugestões de melhoria — tudo com a rigidez técnica de um avaliador sênior do INEP.
+
+A plataforma combina correção com inteligência artificial, acompanhamento de histórico, desafios, conquistas, ranking, mascote personalizável e uma comunidade de estudantes. Ideal para quem se prepara para o ENEM, vestibulares e concursos.
+
+## Pages
+
+- [Início](https://carraco-corrector.lovable.app/): Visão geral da plataforma, recursos e entrada no estúdio de redação.
+- [Planos e preços](https://carraco-corrector.lovable.app/pricing): Opções de assinatura e benefícios de cada plano.
+- [Ajuda](https://carraco-corrector.lovable.app/help): Perguntas frequentes, tutorial e suporte da plataforma.
