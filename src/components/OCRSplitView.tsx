@@ -466,8 +466,7 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
-          capture="environment"
+          accept={ACCEPTED_UPLOAD}
           onChange={handleFileSelect}
           className="hidden"
         />
@@ -476,8 +475,8 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
             <Camera className="h-7 w-7 text-primary" />
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">Digitalizar redação manuscrita</p>
-            <p className="text-xs text-muted-foreground mt-1">Tire uma foto ou arraste a imagem aqui • Máximo 10MB</p>
+            <p className="text-sm font-medium text-foreground">Digitalizar ou importar redação</p>
+            <p className="text-xs text-muted-foreground mt-1">Foto, PDF ou DOCX — arraste aqui • Imagem até 10MB, documento até 20MB</p>
           </div>
           <div className="flex items-center gap-3 mt-2">
             <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors">
@@ -486,7 +485,7 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
             </button>
             <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors">
               <Upload className="h-3.5 w-3.5" />
-              Galeria
+              Arquivo
             </button>
           </div>
         </div>
@@ -516,7 +515,7 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
             <Camera className="h-3 w-3" />
             Trocar imagem
           </button>
-          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} className="hidden" />
+          <input ref={fileInputRef} type="file" accept={ACCEPTED_UPLOAD} onChange={handleFileSelect} className="hidden" />
         </div>
 
         <div className="p-4">
