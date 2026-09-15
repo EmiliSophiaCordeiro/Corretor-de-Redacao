@@ -228,6 +228,7 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
   const [isScanning, setIsScanning] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const intervalRef = useRef<number | null>(null);
 
   const startLoadingAnimation = () => {
