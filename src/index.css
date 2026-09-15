@@ -142,14 +142,63 @@
 
 @layer base {
   * { @apply border-border; }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Manrope', system-ui, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
+    /* Never allow accidental horizontal scrolling on small screens */
+    overflow-x: hidden;
   }
+
   h1, h2, h3, h4, h5 {
     font-family: 'Sora', system-ui, sans-serif;
     letter-spacing: -0.02em;
+    /* Long unbreakable words (themes, e-mails) must never overflow */
+    overflow-wrap: break-word;
+  }
+
+  p, span, li, pre, code, td, th, label, summary, blockquote {
+    overflow-wrap: break-word;
+  }
+
+  /* Media adapts to the container instead of forcing horizontal scroll */
+  img, svg, video, canvas {
+    max-width: 100%;
+  }
+  img, video {
+    height: auto;
+  }
+
+  /* iOS/Safari zooms the page when a focused field is under 16px */
+  @media (max-width: 640px) {
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+
+  /* Comfortable touch targets on touch screens */
+  @media (pointer: coarse) {
+    button:not([data-no-touch-target]),
+    [role="tab"],
+    [role="menuitem"],
+    [data-sidebar="menu"] a {
+      min-height: 44px;
+    }
+  }
+
+  /* Visible keyboard focus everywhere */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   /* Force readable sidebar nav link colors in both themes. */
