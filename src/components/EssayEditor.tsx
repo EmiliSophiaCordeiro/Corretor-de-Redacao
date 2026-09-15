@@ -12,6 +12,7 @@ const EssayEditor = ({ onSubmit, initialText }: EssayEditorProps) => {
   const [text, setText] = useState("");
   const [theme, setTheme] = useState("");
   const [visualLines, setVisualLines] = useState(0);
+  const [resizeTick, setResizeTick] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mirrorRef = useRef<HTMLDivElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
@@ -32,21 +33,36 @@ const EssayEditor = ({ onSubmit, initialText }: EssayEditorProps) => {
       ta.clientWidth -
       parseFloat(cs.paddingLeft || "0") -
       parseFloat(cs.paddingRight || "0");
+    // Mirror must match the textarea's *rendered* typography, which can differ
+    // per device (mobile browsers enforce a 16px minimum on form fields).
+    mirror.style.font = cs.font;
+    mirror.style.fontFamily = cs.fontFamily;
+    mirror.style.fontSize = cs.fontSize;
+    mirror.style.fontWeight = cs.fontWeight;
+    mirror.style.letterSpacing = cs.letterSpacing;
+    mirror.style.lineHeight = cs.lineHeight;
+    mirror.style.tabSize = cs.tabSize;
     mirror.style.width = `${Math.max(0, innerWidth)}px`;
     mirror.textContent = text + (text.endsWith("\n") ? " " : "");
-    const lines = Math.max(1, Math.round(mirror.scrollHeight / LINE_HEIGHT_PX));
+    const lineHeight = parseFloat(cs.lineHeight || "") || LINE_HEIGHT_PX;
+    const lines = Math.max(1, Math.round(mirror.scrollHeight / lineHeight));
     setVisualLines(text.length === 0 ? 0 : lines);
-  }, [text]);
+  }, [text, resizeTick]);
 
 
-  // Observe textarea width changes (responsive)
+  // Observe textarea width/orientation changes so the line count stays correct
+  // on every screen size and after rotating a phone or tablet.
   useEffect(() => {
-    if (!textareaRef.current) return;
-    const ro = new ResizeObserver(() => {
-      setText((t) => t); // trigger recompute via effect
-    });
-    ro.observe(textareaRef.current);
-    return () => ro.disconnect();
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const bump = () => setResizeTick((n) => n + 1);
+    const ro = new ResizeObserver(bump);
+    ro.observe(ta);
+    window.addEventListener("orientationchange", bump);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("orientationchange", bump);
+    };
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

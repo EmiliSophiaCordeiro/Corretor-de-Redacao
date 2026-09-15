@@ -228,6 +228,7 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
   const [isScanning, setIsScanning] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const intervalRef = useRef<number | null>(null);
 
   const startLoadingAnimation = () => {
@@ -460,13 +461,29 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
       <div
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
-        className="rounded-lg border-2 border-dashed border-border bg-card/50 p-8 text-center hover:border-primary/40 transition-colors cursor-pointer"
+        className="rounded-lg border-2 border-dashed border-border bg-card/50 p-5 sm:p-8 text-center hover:border-primary/40 transition-colors cursor-pointer"
         onClick={() => fileInputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
       >
         <input
           ref={fileInputRef}
           type="file"
           accept={ACCEPTED_UPLOAD}
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
           onChange={handleFileSelect}
           className="hidden"
         />
@@ -483,12 +500,26 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
             <p className="text-sm font-medium text-foreground">Digitalizar ou importar redação</p>
             <p className="text-xs text-muted-foreground mt-1">Foto, PDF ou DOCX — arraste aqui • Imagem até 10MB, documento até 20MB</p>
           </div>
-          <div className="flex items-center gap-3 mt-2">
-            <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-2 w-full">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                (cameraInputRef.current ?? fileInputRef.current)?.click();
+              }}
+              className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            >
               <Camera className="h-3.5 w-3.5" />
               Câmera
             </button>
-            <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+              className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            >
               <Upload className="h-3.5 w-3.5" />
               Arquivo
             </button>
