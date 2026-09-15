@@ -47,17 +47,22 @@ const EssayEditor = ({ onSubmit, initialText }: EssayEditorProps) => {
     const lineHeight = parseFloat(cs.lineHeight || "") || LINE_HEIGHT_PX;
     const lines = Math.max(1, Math.round(mirror.scrollHeight / lineHeight));
     setVisualLines(text.length === 0 ? 0 : lines);
-  }, [text]);
+  }, [text, resizeTick]);
 
 
-  // Observe textarea width changes (responsive)
+  // Observe textarea width/orientation changes so the line count stays correct
+  // on every screen size and after rotating a phone or tablet.
   useEffect(() => {
-    if (!textareaRef.current) return;
-    const ro = new ResizeObserver(() => {
-      setText((t) => t); // trigger recompute via effect
-    });
-    ro.observe(textareaRef.current);
-    return () => ro.disconnect();
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const bump = () => setResizeTick((n) => n + 1);
+    const ro = new ResizeObserver(bump);
+    ro.observe(ta);
+    window.addEventListener("orientationchange", bump);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("orientationchange", bump);
+    };
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
