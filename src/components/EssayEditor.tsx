@@ -32,9 +32,19 @@ const EssayEditor = ({ onSubmit, initialText }: EssayEditorProps) => {
       ta.clientWidth -
       parseFloat(cs.paddingLeft || "0") -
       parseFloat(cs.paddingRight || "0");
+    // Mirror must match the textarea's *rendered* typography, which can differ
+    // per device (mobile browsers enforce a 16px minimum on form fields).
+    mirror.style.font = cs.font;
+    mirror.style.fontFamily = cs.fontFamily;
+    mirror.style.fontSize = cs.fontSize;
+    mirror.style.fontWeight = cs.fontWeight;
+    mirror.style.letterSpacing = cs.letterSpacing;
+    mirror.style.lineHeight = cs.lineHeight;
+    mirror.style.tabSize = cs.tabSize;
     mirror.style.width = `${Math.max(0, innerWidth)}px`;
     mirror.textContent = text + (text.endsWith("\n") ? " " : "");
-    const lines = Math.max(1, Math.round(mirror.scrollHeight / LINE_HEIGHT_PX));
+    const lineHeight = parseFloat(cs.lineHeight || "") || LINE_HEIGHT_PX;
+    const lines = Math.max(1, Math.round(mirror.scrollHeight / lineHeight));
     setVisualLines(text.length === 0 ? 0 : lines);
   }, [text]);
 
