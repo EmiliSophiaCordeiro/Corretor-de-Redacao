@@ -12,6 +12,7 @@ const EssayEditor = ({ onSubmit, initialText }: EssayEditorProps) => {
   const [text, setText] = useState("");
   const [theme, setTheme] = useState("");
   const [visualLines, setVisualLines] = useState(0);
+  const [resizeTick, setResizeTick] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mirrorRef = useRef<HTMLDivElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
