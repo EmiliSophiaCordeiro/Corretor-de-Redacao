@@ -350,8 +350,13 @@ serve(async (req) => {
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Créditos de IA insuficientes. Adicione créditos para continuar corrigindo." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            error: "Créditos de IA insuficientes. Adicione créditos para continuar corrigindo.",
+            code: "AI_CREDITS_EXHAUSTED",
+          }),
+          // Return a handled application response so the client can show the
+          // message without treating the expected billing state as a crash.
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 403) {

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStats } from "@/hooks/useUserStats";
 import Mascot from "@/components/Mascot";
-import { Sparkles } from "lucide-react";
+import { AlertCircle, Sparkles } from "lucide-react";
 import Seo from "@/components/Seo";
 
 const Studio = () => {
@@ -21,11 +21,13 @@ const Studio = () => {
   const [selectedMode, setSelectedMode] = useState<CorrectionMode | null>(null);
   const [essayTextFromOCR, setEssayTextFromOCR] = useState<string | null>(null);
   const [lastCorrectionPayload, setLastCorrectionPayload] = useState<{ text: string; theme: string; lines: number; timestamp: string } | null>(null);
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
 
   const handleSubmit = async (text: string, theme: string) => {
     if (!text.trim() || !user) return;
     setIsGrading(true);
     setResult(null);
+    setCorrectionError(null);
 
     try {
       const { data: calibration } = await supabase
@@ -55,7 +57,26 @@ const Studio = () => {
       });
 
       if (error || data?.error) {
-        toast.error(data?.error || "Não conseguimos corrigir a redação agora. Tente novamente.");
+        let message = typeof data?.error === "string"
+          ? data.error
+          : "Não conseguimos corrigir a redação agora. Tente novamente.";
+
+        const context = error && typeof error === "object" && "context" in error
+          ? error.context
+          : null;
+        if (!data?.error && context instanceof Response) {
+          try {
+            const body = await context.clone().json();
+            if (body && typeof body === "object" && "error" in body && typeof body.error === "string") {
+              message = body.error;
+            }
+          } catch {
+            // Keep the safe fallback when the function response is not JSON.
+          }
+        }
+
+        setCorrectionError(message);
+        toast.error(message);
         return;
       }
 
@@ -110,7 +131,9 @@ const Studio = () => {
 
     } catch (e) {
       console.error("[Correção] Exceção", e);
-      toast.error("Erro inesperado. Tente novamente.");
+      const message = "Não conseguimos corrigir a redação agora. Seu texto continua na folha para você tentar novamente.";
+      setCorrectionError(message);
+      toast.error(message);
     } finally {
       setIsGrading(false);
     }
@@ -169,6 +192,17 @@ const Studio = () => {
             <span className="font-mono-score text-xs uppercase tracking-widest text-muted-foreground">
               Analisando redação...
             </span>
+          </div>
+        </div>
+      )}
+
+      {correctionError && !isGrading && (
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+          <div>
+            <p className="font-semibold text-foreground">A correção não foi iniciada</p>
+            <p className="mt-1 text-muted-foreground">{correctionError}</p>
+            <p className="mt-1 text-muted-foreground">Sua redação foi preservada na folha.</p>
           </div>
         </div>
       )}
