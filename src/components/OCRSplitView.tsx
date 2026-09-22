@@ -307,7 +307,14 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
         detectedLines: processed.detectedLines.length,
       });
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        throw new Error("Sua sessão expirou. Saia e entre novamente para digitalizar a redação.");
+      }
+
       const { data, error } = await supabase.functions.invoke("ocr-redacao", {
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: {
           image: base64,
           processedImage: processed.processedImage,

@@ -41,7 +41,14 @@ const Studio = () => {
       });
       setLastCorrectionPayload({ text, theme, lines: text.split("\n").length, timestamp: new Date().toISOString() });
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        throw new Error("Sua sessão expirou. Saia e entre novamente para corrigir a redação.");
+      }
+
       const { data, error } = await supabase.functions.invoke("corrigir-redacao", {
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: {
           essay: text,
           theme,
