@@ -128,8 +128,16 @@ serve(async (req) => {
       );
     }
 
+    const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!GOOGLE_API_KEY && !LOVABLE_API_KEY) throw new Error("AI key is not configured");
+    const AI_URL = GOOGLE_API_KEY
+      ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const AI_HEADERS: Record<string, string> = GOOGLE_API_KEY
+      ? { Authorization: `Bearer ${GOOGLE_API_KEY}`, "Content-Type": "application/json" }
+      : { "Lovable-API-Key": LOVABLE_API_KEY!, "Content-Type": "application/json" };
+    const AI_MODEL = GOOGLE_API_KEY ? OCR_MODEL.replace("google/", "") : OCR_MODEL;
 
     const auditoriaVisual =
       typeof expectedLineCount === "number" && expectedLineCount > 0
@@ -143,14 +151,11 @@ serve(async (req) => {
       }),
     );
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(AI_URL, {
       method: "POST",
-      headers: {
-        "Lovable-API-Key": LOVABLE_API_KEY,
-        "Content-Type": "application/json",
-      },
+      headers: AI_HEADERS,
       body: JSON.stringify({
-        model: OCR_MODEL,
+        model: AI_MODEL,
         temperature: 0,
         top_p: 0,
         response_format: { type: "json_object" },
