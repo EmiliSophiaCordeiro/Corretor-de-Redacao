@@ -263,10 +263,18 @@ serve(async (req) => {
       );
     }
 
+    const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!GOOGLE_API_KEY && !LOVABLE_API_KEY) {
+      throw new Error("AI key is not configured");
     }
+    const AI_URL = GOOGLE_API_KEY
+      ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const AI_HEADERS: Record<string, string> = GOOGLE_API_KEY
+      ? { Authorization: `Bearer ${GOOGLE_API_KEY}`, "Content-Type": "application/json" }
+      : { "Lovable-API-Key": LOVABLE_API_KEY!, "Content-Type": "application/json" };
+    const AI_MODEL = GOOGLE_API_KEY ? "gemini-2.5-pro" : "google/gemini-2.5-pro";
 
     // Build the system prompt based on mode and calibration
     let systemPrompt: string;
@@ -306,14 +314,11 @@ serve(async (req) => {
     const userMessage = `TEMA DA REDAÇÃO: "${theme}"\nMODO DE CORREÇÃO: ${mode_name || "ENEM Padrão"}\n\nCorrija a seguinte redação. Verifique se o texto aborda o tema proposto — se houver fuga total do tema, a nota deve ser ZERO em todas as competências. Se houver tangenciamento (abordagem parcial), penalize na C2. Responda somente com o objeto JSON especificado.\n\n${essay}`;
 
     const callModel = async (extraInstruction?: string) => {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const res = await fetch(AI_URL, {
         method: "POST",
-        headers: {
-          "Lovable-API-Key": LOVABLE_API_KEY,
-          "Content-Type": "application/json",
-        },
+        headers: AI_HEADERS,
         body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
+          model: AI_MODEL,
           temperature: 0.2,
           response_format: { type: "json_object" },
           messages: [
