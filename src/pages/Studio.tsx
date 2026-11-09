@@ -52,7 +52,7 @@ const Studio = () => {
         body: {
           essay: text,
           theme,
-          mode_prompt: selectedMode?.system_prompt || undefined,
+          mode_id: selectedMode?.id || undefined,
           mode_name: selectedMode?.name || "ENEM Padrão",
           calibration: calibration ? {
             custom_criteria: calibration.custom_criteria,
