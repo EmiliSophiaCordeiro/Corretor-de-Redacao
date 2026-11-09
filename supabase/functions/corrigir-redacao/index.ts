@@ -1,5 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
+import { countUsageLast24h, recordUsage } from "../_shared/usage.ts";
+
+// Limites de proteção contra abuso/custo — altere aqui.
+const DAILY_CORRECTION_LIMIT = 10;
+const MAX_ESSAY_CHARS = 8000;
+const MAX_THEME_CHARS = 300;
+const MAX_CALIBRATION_FIELD_CHARS = 500;
 
 
 const corsHeaders = {
@@ -263,6 +270,34 @@ serve(async (req) => {
       );
     }
 
+    const bad = (msg: string) =>
+      new Response(JSON.stringify({ error: msg }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    if (essay.length > MAX_ESSAY_CHARS) {
+      return bad(`A redação ultrapassa o limite de ${MAX_ESSAY_CHARS.toLocaleString("pt-BR")} caracteres. Reduza o texto e tente novamente.`);
+    }
+    if (theme.length > MAX_THEME_CHARS) {
+      return bad(`O tema ultrapassa o limite de ${MAX_THEME_CHARS} caracteres. Resuma o tema e tente novamente.`);
+    }
+    if (calibration && typeof calibration === "object") {
+      for (const key of ["preferred_tone", "custom_criteria", "common_feedback_patterns", "additional_instructions"]) {
+        const v = (calibration as Record<string, unknown>)[key];
+        if (typeof v === "string" && v.length > MAX_CALIBRATION_FIELD_CHARS) {
+          return bad(`Um dos campos da calibração ultrapassa ${MAX_CALIBRATION_FIELD_CHARS} caracteres. Encurte-o nas configurações do corretor.`);
+        }
+      }
+    }
+
+    const used = await countUsageLast24h(userId, "correction");
+    if (used >= DAILY_CORRECTION_LIMIT) {
+      return new Response(
+        JSON.stringify({ error: "Você atingiu o limite diário de correções. Tente novamente amanhã.", code: "DAILY_LIMIT" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!GOOGLE_API_KEY && !LOVABLE_API_KEY) {
@@ -405,6 +440,8 @@ serve(async (req) => {
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    await recordUsage(userId, "correction");
 
     const result = {
       ...normalizeResult(parsed),

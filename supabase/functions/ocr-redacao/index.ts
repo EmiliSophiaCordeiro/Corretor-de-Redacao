@@ -1,5 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getAuthenticatedUserId } from "../_shared/auth.ts";
+import { countUsageLast24h, recordUsage } from "../_shared/usage.ts";
+
+// Limites de proteção contra abuso/custo — altere aqui.
+const DAILY_OCR_LIMIT = 10;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 
 const corsHeaders = {
@@ -128,6 +133,26 @@ serve(async (req) => {
       );
     }
 
+    const approxBytes = (s: unknown) => {
+      if (typeof s !== "string") return 0;
+      const b64 = s.includes(",") ? s.slice(s.indexOf(",") + 1) : s;
+      return Math.floor((b64.length * 3) / 4);
+    };
+    if (approxBytes(image) > MAX_IMAGE_BYTES || approxBytes(processedImage) > MAX_IMAGE_BYTES) {
+      return new Response(
+        JSON.stringify({ error: "A imagem ultrapassa o limite de 5 MB. Tire uma foto com menor resolução ou recorte a folha." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const used = await countUsageLast24h(userId, "ocr");
+    if (used >= DAILY_OCR_LIMIT) {
+      return new Response(
+        JSON.stringify({ error: "Você atingiu o limite diário de correções. Tente novamente amanhã.", code: "DAILY_LIMIT" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!GOOGLE_API_KEY && !LOVABLE_API_KEY) throw new Error("AI key is not configured");
@@ -205,6 +230,7 @@ serve(async (req) => {
     const data = await response.json();
     const content: string | undefined = data.choices?.[0]?.message?.content;
     if (!content) throw new Error("No content in AI response");
+    await recordUsage(userId, "ocr");
 
     debugEvents.push(makeEvent("ai_gateway", "ok", "Resposta bruta do OCR recebida.", { raw_chars: content.length }));
 
