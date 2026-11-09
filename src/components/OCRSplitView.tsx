@@ -324,16 +324,26 @@ const OCRSplitView = ({ onTextExtracted }: Props) => {
       });
 
       if (error || data?.error) {
-        logs.push(createLog("ocr", "error", data?.error || error?.message || "Erro ao digitalizar a redação."));
+        let serverMessage: string | undefined = typeof data?.error === "string" ? data.error : undefined;
+        let serverBody: any = data;
+        const ctx = error && typeof error === "object" && "context" in error ? (error as any).context : null;
+        if (!serverMessage && ctx instanceof Response) {
+          try {
+            serverBody = await ctx.clone().json();
+            if (typeof serverBody?.error === "string") serverMessage = serverBody.error;
+          } catch { /* ignore */ }
+        }
+        const friendly = serverMessage || "Erro ao digitalizar a redação.";
+        logs.push(createLog("ocr", "error", friendly));
         setDebugInfo((current) => ({
           processedImage: current?.processedImage || processed.processedImage,
           lineOverlayImage: current?.lineOverlayImage || processed.lineOverlayImage,
-          rawOcrText: data?.raw_ocr_text || "",
+          rawOcrText: serverBody?.raw_ocr_text || "",
           finalTextToEditor: "",
           detectedLines: processed.detectedLines,
-          logs: [...logs, ...((data?.debug?.events as DebugLog[] | undefined) || [])],
+          logs: [...logs, ...((serverBody?.debug?.events as DebugLog[] | undefined) || [])],
         }));
-        toast.error(data?.error || "Erro ao digitalizar a redação.");
+        toast.error(friendly);
         return;
       }
 
