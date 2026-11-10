@@ -6,6 +6,7 @@ import CarracoLogo from "@/components/CarracoLogo";
 import Mascot from "@/components/Mascot";
 import { toast } from "sonner";
 import Seo from "@/components/Seo";
+import TermsConsentFields from "@/components/TermsConsentFields";
 
 const Auth = () => {
   const { user, loading } = useAuth();
@@ -15,6 +16,8 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptAge, setAcceptAge] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { signIn, signUp } = useAuth();
 
@@ -33,6 +36,7 @@ const Auth = () => {
     if (!isLogin && displayName.trim().length < 2) next.displayName = "Informe seu nome (mínimo 2 caracteres).";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) next.email = "Digite um email válido, como nome@email.com.";
     if (password.length < 6) next.password = "A senha precisa ter pelo menos 6 caracteres.";
+    if (!isLogin && (!acceptTerms || !acceptAge)) next.consent = "Para criar a conta, marque as duas confirmações acima.";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -162,9 +166,19 @@ const Auth = () => {
             )}
           </div>
 
+          {!isLogin && (
+            <TermsConsentFields
+              terms={acceptTerms}
+              age={acceptAge}
+              onTerms={(v) => { setAcceptTerms(v); setErrors((e) => ({ ...e, consent: "" })); }}
+              onAge={(v) => { setAcceptAge(v); setErrors((e) => ({ ...e, consent: "" })); }}
+              error={errors.consent || undefined}
+            />
+          )}
+
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || (!isLogin && (!acceptTerms || !acceptAge))}
             aria-busy={submitting}
             className="w-full rounded-full gradient-primary px-6 py-2.5 font-mono-score text-xs font-semibold uppercase tracking-widest text-primary-foreground transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
@@ -190,13 +204,6 @@ const Auth = () => {
             {isLogin ? "Criar conta" : "Fazer login"}
           </button>
         </p>
-        {!isLogin && (
-          <p className="text-center text-[11px] text-muted-foreground mt-2">
-            Ao criar uma conta você aceita nossos{" "}
-            <a href="/terms" className="underline">Termos</a> e{" "}
-            <a href="/privacy" className="underline">Política de Privacidade</a>.
-          </p>
-        )}
       </div>
     </main>
 

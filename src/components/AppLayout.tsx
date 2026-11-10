@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useAchievementNotifier } from "@/hooks/useAchievementNotifier";
 import OnboardingTour from "./OnboardingTour";
 import FeedbackButton from "./FeedbackButton";
+import TermsGate from "./TermsGate";
 import { Flame, Zap, Coins } from "lucide-react";
 
 const Stat = ({ icon: Icon, value, label, color }: { icon: any; value: number | string; label: string; color: string }) => (
@@ -36,6 +37,7 @@ const AppLayout = () => {
   if (!user) return <Navigate to="/auth" replace />;
 
   return (
+    <TermsGate>
     <SidebarProvider>
       <div className="min-h-dvh flex w-full bg-background">
         <a
@@ -76,6 +78,7 @@ const AppLayout = () => {
         </div>
       </div>
     </SidebarProvider>
+    </TermsGate>
   );
 };
 
