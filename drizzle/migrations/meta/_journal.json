@@ -22,6 +22,13 @@
       "when": 1794315426415,
       "tag": "0002_tighten_catalog_and_avatar_read_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794316165244,
+      "tag": "0003_lock_user_achievements_inserts",
+      "breakpoints": true
     }
   ]
 }
