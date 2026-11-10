@@ -374,6 +374,8 @@ export type Database = {
           is_public: boolean
           onboarding_completed: boolean
           preferences: Json
+          terms_accepted_at: string | null
+          terms_version: string | null
           user_id: string
         }
         Insert: {
@@ -385,6 +387,8 @@ export type Database = {
           is_public?: boolean
           onboarding_completed?: boolean
           preferences?: Json
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           user_id: string
         }
         Update: {
@@ -396,6 +400,8 @@ export type Database = {
           is_public?: boolean
           onboarding_completed?: boolean
           preferences?: Json
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           user_id?: string
         }
         Relationships: []
