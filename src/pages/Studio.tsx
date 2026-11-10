@@ -97,32 +97,15 @@ const Studio = () => {
 
       // Award XP based on score
       const totalScore = (data as GradingResult)?.total_score || 0;
-      const xpEarned = 50 + Math.floor(totalScore / 10);
-      const pointsEarned = 30 + Math.floor(totalScore / 20);
+      // History and rewards are saved by the server.
+      const xpEarned = Number((data as any)?.xp_earned) || 0;
+      const pointsEarned = Number((data as any)?.points_earned) || 0;
 
-      // Persist correction first so record_max_score can validate it
-      const { error: historyError } = await supabase.from("correction_history").insert({
-        user_id: user.id,
-        theme,
-        essay_text: text,
-        mode_name: selectedMode?.name || "ENEM Padrão",
-        result_json: data,
-      });
-
-      if (historyError) {
-        console.error("[Correção] Falha ao salvar histórico", historyError);
+      if ((data as any)?.history_saved === false) {
         toast.error("A correção foi feita, mas não conseguimos salvá-la no histórico.");
       }
 
       try {
-        await supabase.rpc("award_xp", {
-          _user_id: user.id,
-          _xp: xpEarned,
-          _points: pointsEarned,
-        });
-
-        await supabase.rpc("record_max_score" as any, { _score: totalScore });
-
         // Auto-unlock achievements based on new stats
         await supabase.rpc("check_and_unlock_achievements" as any, { _user_id: user.id });
 

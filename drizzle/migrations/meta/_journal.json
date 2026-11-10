@@ -29,6 +29,13 @@
       "when": 1794316165244,
       "tag": "0003_lock_user_achievements_inserts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794316244838,
+      "tag": "0004_server_side_correction_rewards",
+      "breakpoints": true
     }
   ]
 }

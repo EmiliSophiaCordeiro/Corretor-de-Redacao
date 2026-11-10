@@ -647,6 +647,34 @@ export type Database = {
           xp: number
         }[]
       }
+      grant_correction_rewards: {
+        Args: {
+          _official: boolean
+          _points: number
+          _score: number
+          _user_id: string
+          _xp: number
+        }
+        Returns: {
+          created_at: string
+          current_streak: number
+          essays_completed: number
+          last_activity_date: string | null
+          level: number
+          longest_streak: number
+          max_score: number
+          points: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_stats"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       purchase_mascot_item: {
         Args: { _item_id: string }
         Returns: {
